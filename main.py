@@ -1,10 +1,15 @@
 
+import warnings
 import asyncio
 import yaml
 from src import BiliUser
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
+warnings.filterwarnings(
+    "ignore",
+    message="The localize method is no longer necessary, as this time zone supports the fold attribute",
+)
 
 
 async def main():
