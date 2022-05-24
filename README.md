@@ -35,7 +35,9 @@ pip install -r requirements.txt
 
 > 获取B站账号的 access_key  
 
-...
+下载获取工具 [Release B站access_key获取工具 · XiaoMiku01/fansMedalHelper (github.com)](https://github.com/XiaoMiku01/fansMedalHelper/releases/tag/logintool)  
+
+双击打开，扫码登录，会得到 `access_key` 即可
 
 > 填写配置文件  users.yaml
 
@@ -51,6 +53,7 @@ USERS:
     - access_key: 
       shared_uid: 
     # 多用户以上格式添加
+    # 井号后为注释
 ```
 
 > 运行主程序 
