@@ -21,7 +21,7 @@ async def main():
 
 
 def run():
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     loop.run_until_complete(main())
 
 
@@ -30,7 +30,7 @@ if __name__ == '__main__':
         users = yaml.load(f, Loader=yaml.FullLoader)
     cron = users.get('CRON', None)
     if cron:
-        print('使用内置定时器,开启定时任务')
+        print('使用内置定时器,开启定时任务,等待时间到达后执行')
         schedulers = BlockingScheduler()
         schedulers.add_job(
             run,
