@@ -20,7 +20,7 @@ class BiliUser:
         from .api import BiliApi
 
         self.access_key = access_token  # 登录凭证
-        self.needShareUIDs = needShareUIDs  # 需要分享的房间ID "1,2,3"
+        self.needShareUIDs = str(needShareUIDs)  # 需要分享的房间ID "1,2,3"
         self.medals = []  # 用户所有勋章
         self.medalsLower20 = []  # 用户所有勋章，等级小于20的
         self.medalsNeedShare = []  # 用户所有勋章，需要分享的 最多28个
