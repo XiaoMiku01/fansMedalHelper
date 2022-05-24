@@ -1,6 +1,6 @@
 USERS:
     - access_key: XXXXXX # 注意冒号后的空格 否则会读取失败
-      shared_uid: 123,456 # 需要分享房间的房主UID！不是房间号！ 多个用逗号分隔,最多28个
+      shared_uid: 123,456 # 需要分享房间的房主UID！不是房间号！ 多个用逗号（必须是英文逗号！！）分隔,最多28个
 
     - access_key:
       shared_uid:
