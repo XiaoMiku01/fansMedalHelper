@@ -1,0 +1,2 @@
+aiohttp >=3.7.4
+loguru >= 0.5.3
