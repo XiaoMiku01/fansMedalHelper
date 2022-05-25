@@ -1,4 +1,0 @@
-aiohttp 
-loguru 
-pyyaml 
-apscheduler
