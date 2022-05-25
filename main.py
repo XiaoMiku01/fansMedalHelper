@@ -19,7 +19,7 @@ async def main():
 
     for user in users['USERS']:
         if user['access_key']:
-            biliUser = BiliUser(user['access_key'], user['shared_uid'])
+            biliUser = BiliUser(user['access_key'], user['shared_uid'], user.get('banned_uid', ''))
             initTasks.append(biliUser.init())
             startTasks.append(biliUser.start())
     await asyncio.gather(*initTasks)

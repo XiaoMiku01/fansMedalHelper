@@ -16,11 +16,12 @@ logger.add(sys.stdout, colorize=True,
 
 class BiliUser:
 
-    def __init__(self, access_token: str, needShareUIDs: str = ''):
+    def __init__(self, access_token: str, needShareUIDs: str = '', bannedUIDs: str = ''):
         from .api import BiliApi
 
         self.access_key = access_token  # 登录凭证
         self.needShareUIDs = str(needShareUIDs)  # 需要分享的房间ID "1,2,3"
+        self.bannedUIDs = str(bannedUIDs)  # 被禁止的房间ID "1,2,3"
         self.medals = []  # 用户所有勋章
         self.medalsLower20 = []  # 用户所有勋章，等级小于20的
         self.medalsNeedShare = []  # 用户所有勋章，需要分享的 最多28个
@@ -59,7 +60,15 @@ class BiliUser:
         '''
         self.medals.clear()
         self.medalsLower20.clear()
+        try:
+            bannedList = list(map(lambda x: int(x if x else 0), self.bannedUIDs.split(',')))
+            if bannedList:
+                self.log.log("WARNING", "已设置黑名单UID: {}".format(' '.join(map(str, bannedList))))
+        except ValueError:
+            bannedList = []
         async for medal in self.api.getFansMedalandRoomID():
+            if medal['medal']['target_id'] in bannedList:
+                continue
             self.medals.append(medal) if medal['room_info']['room_id'] != 0 else None
         [self.medalsLower20.append(medal) for medal in self.medals if medal['medal']['level'] < 20]
         if self.needShareUIDs == "-1":

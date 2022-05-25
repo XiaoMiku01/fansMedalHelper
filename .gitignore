@@ -4,7 +4,7 @@ __pycache__
 test.py
 go.mod
 go.sum
-login.exe
+*.exe
 login_info.txt
 users.yaml
 *.tmp
