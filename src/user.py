@@ -28,7 +28,7 @@ class BiliUser:
         self.api = BiliApi(self, self.session)
 
         self.retryTimes = 0  # 点赞任务重试次数
-
+        self.maxRetryTimes = 10  # 最大重试次数
         self.message = []
         self.errmsg = []
 
@@ -51,13 +51,14 @@ class BiliUser:
         try:
             signInfo = await self.api.doSign()
             self.log.log("SUCCESS", "签到成功,本月签到次数: {}/{}".format(signInfo['hadSignDays'], signInfo['allDays']))
-            self.message.append("签到成功,本月签到次数: {}/{}".format(signInfo['hadSignDays'], signInfo['allDays']))
+            self.message.append(f"【{self.name}】 签到成功,本月签到次数: {signInfo['hadSignDays']}/{signInfo['allDays']}")
         except Exception as e:
             self.log.log("ERROR", e)
-            self.errmsg.append(e)
+            self.errmsg.append(f"【{self.name}】" + str(e))
         userInfo = await self.api.getUserInfo()
         self.log.log("INFO", "当前用户UL等级: {} ,还差 {} 经验升级".format(userInfo['exp']['user_level'], userInfo['exp']['unext']))
-        self.message.append("当前用户UL等级: {} ,还差 {} 经验升级".format(userInfo['exp']['user_level'], userInfo['exp']['unext']))
+        self.message.append(
+            f"【{self.name}】 UL等级: {userInfo['exp']['user_level']} ,还差 {userInfo['exp']['unext']} 经验升级")
         try:
             self.bannedList = list(map(lambda x: int(x if x else 0), self.bannedUIDs.split(',')))
             if self.bannedList:
@@ -98,18 +99,19 @@ class BiliUser:
             self.log.log("INFO", msg)
             self.log.log("WARNING", "失败房间: {}... {}个".format(
                 ' '.join([medals['anchor_info']['nick_name'] for medals in failedMedals[:5]]), len(failedMedals)))
-            if self.retryTimes > 5:
+            if self.retryTimes > self.maxRetryTimes:
                 self.log.log("ERROR", "任务重试次数过多,停止任务")
                 return
             if len(finallyMedals) / len(self.medalsLower20) <= 0.9:
                 self.log.log("WARNING", "成功率过低,重新执行任务")
                 self.retryTimes += 1
+                self.log.log("WARNING", "重试次数: {}/{}".format(self.retryTimes, self.maxRetryTimes))
                 await self.likeandShare()
             else:
-                self.message.append(msg)
+                self.message.append(f"【{self.name}】 " + msg)
         except Exception as e:
             self.log.exception("点赞、分享任务异常")
-            self.errmsg.append("点赞、分享任务异常,请检查日志")
+            self.errmsg.append(f"【{self.name}】 点赞、分享任务异常,请检查日志")
 
     async def sendDanmaku(self):
         '''
@@ -125,10 +127,11 @@ class BiliUser:
                     "DEBUG", "{} 房间弹幕打卡成功: {} ({}/{})".format(medal['anchor_info']['nick_name'], danmaku, n, len(self.medals)))
             except Exception as e:
                 self.log.log("ERROR", "{} 房间弹幕打卡失败: {}".format(medal['anchor_info']['nick_name'], e))
-                self.errmsg.append("{} 房间弹幕打卡失败: {}".format(medal['anchor_info']['nick_name'], e))
+                self.errmsg.append(f"【{self.name}】 {medal['anchor_info']['nick_name']} 房间弹幕打卡失败: {str(e)}")
             finally:
                 await asyncio.sleep(6)
         self.log.log("SUCCESS", "弹幕打卡任务完成")
+        self.message.append(f"【{self.name}】 弹幕打卡任务完成 {n}/{len(self.medals)}")
 
     async def init(self):
         if not await self.loginVerify():

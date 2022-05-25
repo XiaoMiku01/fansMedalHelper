@@ -6,6 +6,7 @@ import random
 import sys
 import time
 import json
+import aiohttp
 from typing import Union
 from urllib.parse import urlencode
 
@@ -104,11 +105,14 @@ class BiliApi:
             "roomid": room_id,
         }
         for _ in range(3):
-            async with self.session.post(url, data=SingableDict(data).signed, headers=self.headers.update({
-                "Content-Type": "application/x-www-form-urlencoded",
-            })) as resp:
-                self.__check_response(await resp.json())
-                await asyncio.sleep(2)
+            try:
+                async with self.session.post(url, data=SingableDict(data).signed, headers=self.headers.update({
+                    "Content-Type": "application/x-www-form-urlencoded",
+                })) as resp:
+                    self.__check_response(await resp.json())
+                    await asyncio.sleep(2)
+            except aiohttp.ClientError:
+                pass
 
     async def shareRoom(self, room_id: int):
         '''
@@ -124,11 +128,14 @@ class BiliApi:
             "roomid": room_id,
         }
         for _ in range(5):
-            async with self.session.post(url, data=SingableDict(data).signed, headers=self.headers.update({
-                "Content-Type": "application/x-www-form-urlencoded",
-            })) as resp:
-                self.__check_response(await resp.json())
-            await asyncio.sleep(3)
+            try:
+                async with self.session.post(url, data=SingableDict(data).signed, headers=self.headers.update({
+                    "Content-Type": "application/x-www-form-urlencoded",
+                })) as resp:
+                    self.__check_response(await resp.json())
+                await asyncio.sleep(3)
+            except aiohttp.ClientError:
+                pass
     async def sendDanmaku(self, room_id: int) -> str:
         '''
         发送弹幕
