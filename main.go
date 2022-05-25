@@ -1,7 +1,9 @@
 package main
 
-import "MedalHelper/handler"
+import (
+	"MedalHelper/service"
+)
 
 func main() {
-	handler.LoginBili()
+	service.GetFansMedalAndRoomID("b4d5e17fa2f7641af62adc036e5d8e51")
 }
