@@ -7,3 +7,4 @@ go.sum
 login.exe
 login_info.txt
 users.yaml
+*.tmp

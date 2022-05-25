@@ -28,6 +28,8 @@ class BiliUser:
         self.session = ClientSession()
         self.api = BiliApi(self, self.session)
 
+        self.likeRetry = 0  # 点赞任务重试次数
+
     async def loginVerify(self) -> bool:
         '''
         登录验证
@@ -87,8 +89,12 @@ class BiliUser:
             [medla for medla in self.medalsLower20 if medla['medal']['today_feed'] >= 600])
         msg = "20级以下牌子共 {} 个,完成点赞 {} 个".format(len(self.medalsLower20), finallyMedals)
         self.log.log("INFO", msg)
+        if self.likeRetry > 5:
+            self.log.log("ERROR", "点赞任务重试次数过多,停止点赞任务")
+            return
         if finallyMedals / len(self.medalsLower20) <= 0.8:
             self.log.log("WARNING", "点赞成功率过低,重新点赞任务")
+            self.likeRetry += 1
             await self.likeInteract()
 
     async def shareRoom(self):
