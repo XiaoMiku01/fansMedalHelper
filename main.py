@@ -42,7 +42,6 @@ async def main():
     except Exception:
         messageList.append("检查版本失败")
         log.warning("检查版本失败")
-    await session.close()
     initTasks = []
     startTasks = []
     catchMsg = []
@@ -57,6 +56,7 @@ async def main():
     messageList = list(itertools.chain.from_iterable(await asyncio.gather(*catchMsg)))
     if users.get('SENDKEY', ''):
         await push_message(session, users['SENDKEY'], "\n\n".join(messageList))
+    await session.close()
 
 
 def run(*args, **kwargs):
