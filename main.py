@@ -1,4 +1,5 @@
 
+import os
 import warnings
 import asyncio
 import yaml
@@ -28,9 +29,11 @@ async def main():
 def run():
     loop = asyncio.new_event_loop()
     loop.run_until_complete(main())
+    print("任务结束,等待下一次执行")
 
 
 if __name__ == '__main__':
+    os.chdir(os.path.dirname(os.path.abspath(__file__)).split(__file__)[0])
     with open('users.yaml', 'r', encoding='utf-8') as f:
         users = yaml.load(f, Loader=yaml.FullLoader)
     cron = users.get('CRON', None)

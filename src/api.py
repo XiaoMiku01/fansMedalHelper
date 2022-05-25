@@ -88,10 +88,9 @@ class BiliApi:
                     first_flag = False
                 for item in data['list']:
                     yield item
-                if not data['page_info']['has_more']:
+                if not data['list']:
                     break
                 params['page'] += 1
-
     async def likeInteract(self, room_id: int):
         '''
         点赞 *3

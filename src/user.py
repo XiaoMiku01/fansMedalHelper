@@ -60,14 +60,18 @@ class BiliUser:
         async for medal in self.api.getFansMedalandRoomID():
             self.medals.append(medal) if medal['room_info']['room_id'] != 0 else None
         [self.medalsLower20.append(medal) for medal in self.medals if medal['medal']['level'] < 20]
-        try:
-            self.medalsNeedShare = [
-                medal for medal in self.medalsLower20 if medal['medal']['target_id'] in
-                list(map(lambda x: int(x if x else 0), self.needShareUIDs.split(',')))
-            ]
-        except ValueError:
-            self.medalsNeedShare = []
-            self.log.log("ERROR", "需要分享的UID错误")
+        if self.needShareUIDs == "-1":
+            self.medalsNeedShare = self.medalsLower20
+            self.log.log("WARNING", "将分享所有等级小于20的直播间")
+        else:
+            try:
+                self.medalsNeedShare = [
+                    medal for medal in self.medalsLower20 if medal['medal']['target_id'] in
+                    list(map(lambda x: int(x if x else 0), self.needShareUIDs.split(',')))
+                ]
+            except ValueError:
+                self.medalsNeedShare = []
+                self.log.log("ERROR", "需要分享的UID错误")
 
     async def likeInteract(self):
         '''
@@ -79,9 +83,13 @@ class BiliUser:
         await asyncio.sleep(10)
         await self.getMedals()  # 刷新勋章
         self.log.log("SUCCESS", "点赞任务完成")
-        msg = "20级以下牌子共 {} 个,完成点赞 {} 个".format(len(self.medalsLower20), len(
-            [medla for medla in self.medalsLower20 if medla['medal']['today_feed'] >= 600]))
+        finallyMedals = len(
+            [medla for medla in self.medalsLower20 if medla['medal']['today_feed'] >= 600])
+        msg = "20级以下牌子共 {} 个,完成点赞 {} 个".format(len(self.medalsLower20), finallyMedals)
         self.log.log("INFO", msg)
+        if finallyMedals / len(self.medalsLower20) <= 0.8:
+            self.log.log("WARNING", "点赞成功率过低,重新点赞任务")
+            await self.likeInteract()
 
     async def shareRoom(self):
         '''
