@@ -123,11 +123,12 @@ class BiliApi:
             "interact_type": 3,
             "roomid": room_id,
         }
-        async with self.session.post(url, data=SingableDict(data).signed, headers=self.headers.update({
-            "Content-Type": "application/x-www-form-urlencoded",
-        })) as resp:
-            self.__check_response(await resp.json())
-
+        for _ in range(5):
+            async with self.session.post(url, data=SingableDict(data).signed, headers=self.headers.update({
+                "Content-Type": "application/x-www-form-urlencoded",
+            })) as resp:
+                self.__check_response(await resp.json())
+            await asyncio.sleep(3)
     async def sendDanmaku(self, room_id: int) -> str:
         '''
         发送弹幕

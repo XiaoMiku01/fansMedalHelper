@@ -1,12 +1,16 @@
 
 import os
 import warnings
-import asyncio
-import yaml
-from src import BiliUser
+try:
+    import asyncio
+    import yaml
+    from apscheduler.schedulers.blocking import BlockingScheduler
+    from apscheduler.triggers.cron import CronTrigger
+    from src import BiliUser
+except ImportError as e:
+    print("第一次运行自动安装依赖库")
+    os.system("pip3 install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple")
 
-from apscheduler.schedulers.blocking import BlockingScheduler
-from apscheduler.triggers.cron import CronTrigger
 warnings.filterwarnings(
     "ignore",
     message="The localize method is no longer necessary, as this time zone supports the fold attribute",
@@ -19,7 +23,7 @@ async def main():
 
     for user in users['USERS']:
         if user['access_key']:
-            biliUser = BiliUser(user['access_key'], user['shared_uid'], user.get('banned_uid', ''))
+            biliUser = BiliUser(user['access_key'], user.get('banned_uid', ''))
             initTasks.append(biliUser.init())
             startTasks.append(biliUser.start())
     await asyncio.gather(*initTasks)

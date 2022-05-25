@@ -16,20 +16,18 @@ logger.add(sys.stdout, colorize=True,
 
 class BiliUser:
 
-    def __init__(self, access_token: str, needShareUIDs: str = '', bannedUIDs: str = ''):
+    def __init__(self, access_token: str, bannedUIDs: str = ''):
         from .api import BiliApi
 
         self.access_key = access_token  # 登录凭证
-        self.needShareUIDs = str(needShareUIDs)  # 需要分享的房间ID "1,2,3"
         self.bannedUIDs = str(bannedUIDs)  # 被禁止的房间ID "1,2,3"
         self.medals = []  # 用户所有勋章
         self.medalsLower20 = []  # 用户所有勋章，等级小于20的
-        self.medalsNeedShare = []  # 用户所有勋章，需要分享的 最多28个
 
         self.session = ClientSession()
         self.api = BiliApi(self, self.session)
 
-        self.likeRetry = 0  # 点赞任务重试次数
+        self.retryTimes = 0  # 点赞任务重试次数
 
     async def loginVerify(self) -> bool:
         '''
@@ -42,6 +40,7 @@ class BiliUser:
             self.isLogin = False
             return False
         self.log.log("SUCCESS", str(loginInfo['mid']) + " 登录成功")
+
         self.isLogin = True
         return True
 
@@ -53,6 +52,12 @@ class BiliUser:
             self.log.log("ERROR", e)
         userInfo = await self.api.getUserInfo()
         self.log.log("INFO", "当前用户UL等级: {} ,还差 {} 经验升级".format(userInfo['exp']['user_level'], userInfo['exp']['unext']))
+        try:
+            self.bannedList = list(map(lambda x: int(x if x else 0), self.bannedUIDs.split(',')))
+            if self.bannedList:
+                self.log.log("WARNING", "已设置黑名单UID: {}".format(' '.join(map(str, self.bannedList))))
+        except ValueError:
+            self.bannedList = []
 
     async def getMedals(self):
         '''
@@ -60,81 +65,39 @@ class BiliUser:
         '''
         self.medals.clear()
         self.medalsLower20.clear()
-        try:
-            bannedList = list(map(lambda x: int(x if x else 0), self.bannedUIDs.split(',')))
-            if bannedList:
-                self.log.log("WARNING", "已设置黑名单UID: {}".format(' '.join(map(str, bannedList))))
-        except ValueError:
-            bannedList = []
         async for medal in self.api.getFansMedalandRoomID():
-            if medal['medal']['target_id'] in bannedList:
+            if medal['medal']['target_id'] in self.bannedList:
                 continue
             self.medals.append(medal) if medal['room_info']['room_id'] != 0 else None
         [self.medalsLower20.append(medal) for medal in self.medals if medal['medal']['level'] < 20]
-        if self.needShareUIDs == "-1":
-            self.medalsNeedShare = self.medalsLower20
-            self.log.log("WARNING", "将分享所有等级小于20的直播间")
-        else:
-            try:
-                self.medalsNeedShare = [
-                    medal for medal in self.medalsLower20 if medal['medal']['target_id'] in
-                    list(map(lambda x: int(x if x else 0), self.needShareUIDs.split(',')))
-                ]
-            except ValueError:
-                self.medalsNeedShare = []
-                self.log.log("ERROR", "需要分享的UID错误")
 
-    async def likeInteract(self):
+    async def likeandShare(self):
         '''
-        点赞 *3 异步执行
+        点赞 *3 分享 * 5异步执行
         '''
-        self.log.log("INFO", "点赞任务开始....(预计20秒完成)")
-        likeTasks = [self.api.likeInteract(medal['room_info']['room_id']) for medal in self.medalsLower20]
-        await asyncio.gather(*likeTasks)
+        self.log.log("INFO", "点赞分享任务开始....")
+        # likeTasks = [self.api.likeInteract(medal['room_info']['room_id']) for medal in self.medalsLower20]
+        allTasks = []
+        for medal in self.medalsLower20:
+            allTasks.append(self.api.likeInteract(medal['room_info']['room_id']))
+            allTasks.append(self.api.shareRoom(medal['room_info']['room_id']))
+        await asyncio.gather(*allTasks)
         await asyncio.sleep(10)
         await self.getMedals()  # 刷新勋章
         self.log.log("SUCCESS", "点赞任务完成")
-        finallyMedals = len(
-            [medla for medla in self.medalsLower20 if medla['medal']['today_feed'] >= 600])
-        msg = "20级以下牌子共 {} 个,完成点赞 {} 个".format(len(self.medalsLower20), finallyMedals)
+        finallyMedals = [medla for medla in self.medalsLower20 if medla['medal']['today_feed'] >= 1200]
+        failedMedals = [medla for medla in self.medalsLower20 if medla['medal']['today_feed'] < 1200]
+        msg = "20级以下牌子共 {} 个,完成任务 {} 个".format(len(self.medalsLower20), len(finallyMedals))
         self.log.log("INFO", msg)
-        if self.likeRetry > 5:
-            self.log.log("ERROR", "点赞任务重试次数过多,停止点赞任务")
+        self.log.log("WARNING", "失败房间: {}... {}个".format(
+            ' '.join([medals['anchor_info']['nick_name'] for medals in failedMedals[:5]]), len(failedMedals)))
+        if self.retryTimes > 5:
+            self.log.log("ERROR", "任务重试次数过多,停止任务")
             return
-        if finallyMedals / len(self.medalsLower20) <= 0.8:
-            self.log.log("WARNING", "点赞成功率过低,重新点赞任务")
-            self.likeRetry += 1
-            await self.likeInteract()
-
-    async def shareRoom(self):
-        '''
-        分享直播间 CD 600s
-        '''
-        medalsNeedShare = self.medalsNeedShare.copy()
-        if not medalsNeedShare:
-            self.log.log("WARNING", "没有设置需要分享的直播间")
-            return
-        if len(medalsNeedShare) > 28:
-            medalsNeedShare = medalsNeedShare[:28]
-            self.log.log("WARNING", "由于B站分享CD为10分钟,所以一天最多只能分享28个直播间")
-        needTime = len(medalsNeedShare) * 50 - 10
-        self.log.log("INFO", "分享任务开始....(设置了 {} 个房间({})，预计{}分钟完成)".format(
-            len(medalsNeedShare), "、".join([m['anchor_info']['nick_name'] for m in medalsNeedShare]), needTime))
-        for index, medal in enumerate(medalsNeedShare):
-            if medal['medal']['level'] >= 20:
-                continue
-            for i in range(1, 6):
-                await self.api.shareRoom(medal['room_info']['room_id'])
-                self.log.log("SUCCESS", "{} 分享成功 {} 次 (还需 {} 分钟完成)".format(
-                    medal['anchor_info']['nick_name'], i, needTime))
-                if i == 5:
-                    break
-                needTime -= 10
-                await asyncio.sleep(600)
-            if index == len(medalsNeedShare) - 1:
-                break
-            await asyncio.sleep(600)
-        self.log.log("SUCCESS", "分享任务完成")
+        if len(finallyMedals) / len(self.medalsLower20) <= 0.9:
+            self.log.log("WARNING", "成功率过低,重新执行任务")
+            self.retryTimes += 1
+            await self.likeandShare()
 
     async def sendDanmaku(self):
         '''
@@ -164,6 +127,6 @@ class BiliUser:
 
     async def start(self):
         if self.isLogin:
-            task = [self.likeInteract(), self.shareRoom(), self.sendDanmaku()]
+            task = [self.likeandShare(), self.sendDanmaku()]
             await asyncio.wait(task)
         await self.session.close()
