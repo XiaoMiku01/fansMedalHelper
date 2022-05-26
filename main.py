@@ -18,7 +18,7 @@ warnings.filterwarnings(
 )
 os.chdir(os.path.dirname(os.path.abspath(__file__)).split(__file__)[0])
 try:
-    with open('users.yaml', 'r', encoding='utf-8') as f:
+    with open('config/users.yaml', 'r', encoding='utf-8') as f:
         users = yaml.load(f, Loader=yaml.FullLoader)
 except Exception as e:
     print("读取配置文件失败,请检查配置文件格式是否正确")
