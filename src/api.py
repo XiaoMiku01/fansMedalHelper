@@ -241,7 +241,6 @@ class BiliApi:
         return await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
 
     
-    @retry()
     async def getUserInfo(self):
         '''
         用户直播等级
