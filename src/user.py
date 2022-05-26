@@ -1,5 +1,5 @@
 
-from aiohttp import ClientSession
+from aiohttp import ClientSession, ClientTimeout
 import sys
 import os
 import asyncio
@@ -18,13 +18,13 @@ class BiliUser:
 
     def __init__(self, access_token: str, bannedUIDs: str = ''):
         from .api import BiliApi
-
+        self.mid, self.name = 0, ""
         self.access_key = access_token  # 登录凭证
         self.bannedUIDs = str(bannedUIDs)  # 被禁止的房间ID "1,2,3"
         self.medals = []  # 用户所有勋章
         self.medalsLower20 = []  # 用户所有勋章，等级小于20的
 
-        self.session = ClientSession()
+        self.session = ClientSession(timeout=ClientTimeout(total=3))
         self.api = BiliApi(self, self.session)
 
         self.retryTimes = 0  # 点赞任务重试次数
@@ -78,16 +78,21 @@ class BiliUser:
             self.medals.append(medal) if medal['room_info']['room_id'] != 0 else None
         [self.medalsLower20.append(medal) for medal in self.medals if medal['medal']['level'] < 20]
 
-    async def likeandShare(self):
+    async def likeandShare(self, failedMedals: list = []):
         '''
         点赞 *3 分享 * 5异步执行
         '''
         try:
             self.log.log("INFO", "点赞、分享任务开始....")
             allTasks = []
-            for medal in self.medalsLower20:
-                allTasks.append(self.api.likeInteract(medal['room_info']['room_id']))
-                allTasks.append(self.api.shareRoom(medal['room_info']['room_id']))
+            if not failedMedals:
+                for medal in self.medalsLower20:
+                    allTasks.append(self.api.likeInteract(medal['room_info']['room_id']))
+                    allTasks.append(self.api.shareRoom(medal['room_info']['room_id']))
+            else:
+                for medal in failedMedals:
+                    allTasks.append(self.api.likeInteract(medal['room_info']['room_id']))
+                    allTasks.append(self.api.shareRoom(medal['room_info']['room_id']))
             await asyncio.gather(*allTasks)
             await asyncio.sleep(10)
             await self.getMedals()  # 刷新勋章
@@ -106,9 +111,11 @@ class BiliUser:
                 self.log.log("WARNING", "成功率过低,重新执行任务")
                 self.retryTimes += 1
                 self.log.log("WARNING", "重试次数: {}/{}".format(self.retryTimes, self.maxRetryTimes))
-                await self.likeandShare()
+                await self.likeandShare(failedMedals)
             else:
                 self.message.append(f"【{self.name}】 " + msg)
+                self.errmsg.append(f"【{self.name}】 " + "失败房间: {}... {}个".format(
+                    ' '.join([medals['anchor_info']['nick_name'] for medals in failedMedals[:5]]), len(failedMedals)))
         except Exception as e:
             self.log.exception("点赞、分享任务异常")
             self.errmsg.append(f"【{self.name}】 点赞、分享任务异常,请检查日志")

@@ -6,9 +6,9 @@ import random
 import sys
 import time
 import json
-import aiohttp
 from typing import Union
-from urllib.parse import urlencode
+from loguru import logger
+from urllib.parse import urlencode,urlparse
 
 
 from aiohttp import ClientSession
@@ -36,8 +36,6 @@ class Crypto:
         elif type(data) != str:
             raise TypeError
         return Crypto.md5(_str + Crypto.APPSECRET)
-
-
 class SingableDict(dict):
     @property
     def sorted(self):
@@ -50,7 +48,43 @@ class SingableDict(dict):
         _sorted = self.sorted
         return {**_sorted, 'sign': Crypto.sign(_sorted)}
 
+def retry(tries=3, interval=1):
+    def decorate(func):
+        async def wrapper(*args, **kwargs):
+            count = 0
+            func.isRetryable = False
+            log = logger.bind(user=f"{args[0].u.name}")
+            while True:
+                try:
+                    result = await func(*args, **kwargs)
+                except Exception as e:
+                    count += 1
+                    if type(e) ==BiliApiError:
+                        if e.code == 1011040:
+                            raise e
+                        elif e.code == 10030:
+                            await asyncio.sleep(10)
+                        else:
+                            raise e
+                    if count > tries:
+                        raise e
+                    else:
+                        log.error(f"API {urlparse(args[1]).path} 调用出现异常: {str(e)}，重试中，第{count}次重试")
+                        await asyncio.sleep(interval)
+                    func.isRetryable = True
+                else:
+                    if func.isRetryable:
+                        log.success(f"重试成功")
+                    return result
+        return wrapper
+    return decorate
 
+class BiliApiError(Exception):
+    def __init__(self, code: int, msg: str):
+        self.code = code
+        self.msg = msg
+    def __str__(self):
+        return self.msg
 class BiliApi:
     headers = {
         "User-Agent": "Mozilla/5.0 BiliDroid/6.73.1 (bbcallen@gmail.com) os/android model/Mi 10 Pro mobi_app/android build/6731100 channel/xiaomi innerVer/6731110 osVer/12 network/2",
@@ -63,8 +97,18 @@ class BiliApi:
 
     def __check_response(self, resp: dict) -> dict:
         if resp['code'] != 0:
-            raise Exception(resp['message'])
+            raise BiliApiError(resp['code'],resp['message'])
         return resp['data']
+
+    @retry()
+    async def __get(self,*args, **kwargs):
+        async with self.session.get(*args, **kwargs) as resp:
+            return self.__check_response(await resp.json())
+
+    @retry()
+    async def __post(self,*args, **kwargs):
+        async with self.session.post(*args, **kwargs) as resp:
+            return self.__check_response(await resp.json())
 
     async def getFansMedalandRoomID(self) -> dict:
         '''
@@ -81,20 +125,20 @@ class BiliApi:
         }
         first_flag = True
         while True:
-            async with self.session.get(url, params=SingableDict(params).signed, headers=self.headers) as resp:
-                data = self.__check_response(await resp.json())
-                if first_flag and data['special_list']:
-                    for item in data['special_list']:
-                        yield item
-                    first_flag = False
-                for item in data['list']:
+            data = await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
+            if first_flag and data['special_list']:
+                for item in data['special_list']:
                     yield item
-                if not data['list']:
-                    break
-                params['page'] += 1
+                first_flag = False
+            for item in data['list']:
+                yield item
+            if not data['list']:
+                break
+            params['page'] += 1
+
     async def likeInteract(self, room_id: int):
         '''
-        点赞 *3
+        点赞直播间
         '''
         url = "http://api.live.bilibili.com/xlive/web-ucenter/v1/interact/likeInteract"
         data = {
@@ -105,14 +149,10 @@ class BiliApi:
             "roomid": room_id,
         }
         for _ in range(3):
-            try:
-                async with self.session.post(url, data=SingableDict(data).signed, headers=self.headers.update({
-                    "Content-Type": "application/x-www-form-urlencoded",
-                })) as resp:
-                    self.__check_response(await resp.json())
-                    await asyncio.sleep(2)
-            except aiohttp.ClientError:
-                pass
+            await self.__post(url, data=SingableDict(data).signed, headers=self.headers.update({
+                "Content-Type": "application/x-www-form-urlencoded",
+            }))
+            await asyncio.sleep(2)
 
     async def shareRoom(self, room_id: int):
         '''
@@ -128,14 +168,11 @@ class BiliApi:
             "roomid": room_id,
         }
         for _ in range(5):
-            try:
-                async with self.session.post(url, data=SingableDict(data).signed, headers=self.headers.update({
-                    "Content-Type": "application/x-www-form-urlencoded",
-                })) as resp:
-                    self.__check_response(await resp.json())
-                await asyncio.sleep(3)
-            except aiohttp.ClientError:
-                pass
+            await self.__post(url, data=SingableDict(data).signed, headers=self.headers.update({
+                "Content-Type": "application/x-www-form-urlencoded",
+            }))
+            await asyncio.sleep(3)
+
     async def sendDanmaku(self, room_id: int) -> str:
         '''
         发送弹幕
@@ -171,10 +208,10 @@ class BiliApi:
             "color": "16777215",
             "fontsize": "25",
         }
-        async with self.session.post(url, params=SingableDict(params).signed, data=data, headers=self.headers.update({
+        resp = await self.__post(url, params=SingableDict(params).signed, data=data, headers=self.headers.update({
             "Content-Type": "application/x-www-form-urlencoded",
-        })) as resp:
-            return json.loads(self.__check_response(await resp.json())['mode_info']['extra'])['content']
+        }))
+        return json.loads(resp['mode_info']['extra'])['content']
 
     async def loginVerift(self):
         '''
@@ -187,9 +224,9 @@ class BiliApi:
             "appkey": Crypto.APPKEY,
             "ts": int(time.time()),
         }
-        async with self.session.get(url, params=SingableDict(params).signed, headers=self.headers) as resp:
-            return self.__check_response(await resp.json())
+        return await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
 
+    
     async def doSign(self):
         '''
         直播区签到
@@ -201,9 +238,10 @@ class BiliApi:
             "appkey": Crypto.APPKEY,
             "ts": int(time.time()),
         }
-        async with self.session.get(url, params=SingableDict(params).signed, headers=self.headers) as resp:
-            return self.__check_response(await resp.json())
+        return await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
 
+    
+    @retry()
     async def getUserInfo(self):
         '''
         用户直播等级
@@ -215,6 +253,6 @@ class BiliApi:
             "appkey": Crypto.APPKEY,
             "ts": int(time.time()),
         }
-        async with self.session.get(url, params=SingableDict(params).signed, headers=self.headers) as resp:
-            return self.__check_response(await resp.json())
+        return await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
+
         
