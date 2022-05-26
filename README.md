@@ -23,21 +23,22 @@
 
 ### 使用说明
 
-##### 环境需求：Python 版本大于 3.8
+##### 环境需求：Go 1.16 (低版本也可兼容)
 
 > 克隆本项目 安装依赖
 
 ```shell
-git clone https://github.com/XiaoMiku01/fansMedalHelper.git
+git clone https://github.com/ThreeCatsLoveFish/MedalHelper
 cd fansMedalHelper
-pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+go get -u -v
 ```
 
 > 获取 B 站账号的 access_key
 
-下载获取工具 [Release B 站 access_key 获取工具 · XiaoMiku01/fansMedalHelper (github.com)](https://github.com/XiaoMiku01/fansMedalHelper/releases/tag/logintool)
-
-双击打开，扫码登录，会得到 `access_key` 即可
+```shell
+go run main.go login
+```
+扫码登录，会得到 `access_key` 即可
 
 > 填写配置文件 users.yaml
 
@@ -47,13 +48,32 @@ vim users.yaml
 
 ```yaml
 USERS:
-    - access_key: XXXXXX # 注意冒号后的空格 否则会读取失败
-      banned_uid: 789,100 # 黑名单UID 同上,填了后将不会打卡，点赞，分享
-    - access_key:
-      banned_uid:
-    # 多用户以上格式添加
-    # 井号后为注释 井号前后必须有空格
-CRON: # 0 0 * * *
+  - access_key: XXXXXX # 注意冒号后的空格 否则会读取失败 英文冒号
+    banned_uid: 789,100 # 黑名单UID 同上,填了后将不会打卡，点赞，分享 用英文逗号分隔 不填则不限制
+  - access_key:
+    banned_uid:
+  # 注意对齐
+  # 多用户以上格式添加
+  # 井号后为注释 井号前后必须有空格
+DANMU:
+  [
+    "(⌒▽⌒).",
+    "（￣▽￣）.",
+    "(=・ω・=).",
+    "(｀・ω・´).",
+    "(〜￣△￣)〜.",
+    "(･∀･).",
+    "(°∀°)ﾉ.",
+    "(￣3￣).",
+    "╮(￣▽￣)╭.",
+    "_(:3」∠)_.",
+    "(^・ω・^ ).",
+    "(●￣(ｴ)￣●).",
+    "ε=ε=(ノ≧∇≦)ノ.",
+    "⁄(⁄ ⁄•⁄ω⁄•⁄ ⁄)⁄.",
+    "←◡←.",
+  ]
+CRON: 0 0 * * *
 # 这里是 cron 表达式, 第一个参数是分钟, 第二个参数是小时
 # 例如每天凌晨0点0分执行一次为 0 0 * * *
 # 如果不填,则不使用内置定时器,填写正确后要保持该进程一直运行
@@ -64,7 +84,7 @@ CRON: # 0 0 * * *
 > 运行主程序
 
 ```shell
-python main.py
+go run main.go
 ```
 
 > 效果图
@@ -79,16 +99,9 @@ python main.py
 
 ### 更新日志
 
--   2022-5-25
+-   2022-5-26
 
-    -   B 站取消了分享的 10 分钟 CD，目前已改为异步执行
-
-    -   增加了黑名单设置
-
-    -   增加了自动分享 28 个直播的设置
-    -   修复了，粉丝牌过多导致获取不全情况
-    -   修复了，粉丝牌过多导致点赞不完全的情况
-    -   自动切换运行目录
+    - 重构为Go语言
 
 ---
 

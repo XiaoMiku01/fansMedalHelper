@@ -2,19 +2,9 @@ package util
 
 import (
 	"fmt"
-	"log"
 	"net/url"
-	"os"
 	"time"
-
-	"github.com/TwiN/go-color"
 )
-
-var logger *log.Logger
-
-func init() {
-	logger = log.New(os.Stdout, color.Green, log.LstdFlags)
-}
 
 // Map2String can transfer a string-string map into a raw string
 func Map2string(params map[string]string) string {
@@ -50,26 +40,4 @@ func IntContain(array []int, val int) (index int) {
 		}
 	}
 	return
-}
-
-/*****************************************
- *              Log helpers              *
- *****************************************/
-func Debug(format string, v ...interface{}) {
-	format = "[DEBUG]" + format
-	log.Default().Printf(format, v...)
-}
-
-func Info(format string, v ...interface{}) {
-	format = "[INFO]" + format
-	log.Default().Printf(format, v...)
-}
-
-func Error(format string, v ...interface{}) {
-	format = "[ERROR]" + format
-	log.Default().Printf(format, v...)
-}
-
-func PrintColor(format string, v ...interface{}) {
-	logger.Printf(format, v...)
 }
