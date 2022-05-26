@@ -4,14 +4,11 @@ import (
 	"MedalHelper/dto"
 	"MedalHelper/manager"
 	"MedalHelper/util"
-	"time"
-
-	"github.com/sethvargo/go-retry"
 )
 
 type User struct {
 	// 用户ID
-	Uid string
+	Uid int
 	// 用户名称
 	Name string
 	// 是否登录
@@ -39,15 +36,21 @@ func NewUser(accessKey string, uids []int) User {
 	}
 }
 
+func (user User) info(format string, v ...interface{}) {
+	format = user.Name + format
+	util.Info(format, v...)
+}
+
 func (user *User) loginVerify() bool {
-	data, err := manager.LoginVerify(user.accessKey)
-	if err != nil || data.(map[string]string)["mid"] != "0" {
+	resp, err := manager.LoginVerify(user.accessKey)
+	if err != nil || resp.Data.Mid == 0 {
 		user.isLogin = false
 		return false
 	}
-	user.Uid = data.(map[string]string)["mid"]
-	user.Name = data.(map[string]string)["name"]
+	user.Uid = resp.Data.Mid
+	user.Name = resp.Data.Name
 	user.isLogin = true
+	user.info("登录成功")
 	return true
 }
 
@@ -56,17 +59,22 @@ func (user *User) signIn() error {
 	if err != nil {
 		return nil
 	}
-	signed := signInfo.(map[string]string)["hadSignDays"]
-	all := signInfo.(map[string]string)["allDays"]
-	util.Info("签到成功,本月签到次数: %s/%s", signed, all)
+	if signInfo.Code == 0 {
+		// FIXME: No package collected, fix this later
+		signed := signInfo.Data.(map[string]string)["hadSignDays"]
+		all := signInfo.Data.(map[string]string)["allDays"]
+		user.info("签到成功,本月签到次数: %s/%s", signed, all)
+	} else {
+		user.info("%s", signInfo.Message)
+	}
 
 	userInfo, err := manager.GetUserInfo(user.accessKey)
 	if err != nil {
 		return nil
 	}
-	level := userInfo.(map[string]map[string]string)["exp"]["user_level"]
-	unext := userInfo.(map[string]map[string]string)["exp"]["unext"]
-	util.Info("当前用户UL等级: %s ,还差 %s 经验升级", level, unext)
+	level := userInfo.Data.Exp.UserLevel
+	unext := userInfo.Data.Exp.Unext
+	user.info("当前用户UL等级: %d ,还差 %d 经验升级", level, unext)
 	return nil
 }
 

@@ -8,7 +8,7 @@ import (
 	"math/rand"
 )
 
-func LoginVerify(accessKey string) (interface{}, error) {
+func LoginVerify(accessKey string) (dto.BiliAccountResp, error) {
 	rawUrl := "http://app.bilibili.com/x/v2/account/mine"
 	data := map[string]string{
 		"access_key": accessKey,
@@ -17,20 +17,20 @@ func LoginVerify(accessKey string) (interface{}, error) {
 		"ts":         util.GetTimestamp(),
 	}
 	util.Signature(&data)
+	var resp dto.BiliAccountResp
 	body, err := Get(rawUrl, util.Map2Params(data))
 	if err != nil {
 		util.Error("LoginVerify error: %v, data: %v", err, data)
-		return nil, err
+		return resp, err
 	}
-	var resp dto.BiliDataResp
 	if err = json.Unmarshal(body, &resp); err != nil {
-		util.Error("Unmarshal BiliDataResp error: %v, raw data: %v", err, body)
-		return nil, err
+		util.Error("Unmarshal BiliAccountResp error: %v, raw data: %v", err, body)
+		return resp, err
 	}
-	return resp.Data, nil
+	return resp, nil
 }
 
-func SignIn(accessKey string) (interface{}, error) {
+func SignIn(accessKey string) (dto.BiliDataResp, error) {
 	rawUrl := "http://api.live.bilibili.com/rc/v1/Sign/doSign"
 	data := map[string]string{
 		"access_key": accessKey,
@@ -39,20 +39,20 @@ func SignIn(accessKey string) (interface{}, error) {
 		"ts":         util.GetTimestamp(),
 	}
 	util.Signature(&data)
+	var resp dto.BiliDataResp
 	body, err := Get(rawUrl, util.Map2Params(data))
 	if err != nil {
 		util.Error("SignIn error: %v, data: %v", err, data)
-		return nil, err
+		return resp, err
 	}
-	var resp dto.BiliDataResp
 	if err = json.Unmarshal(body, &resp); err != nil {
 		util.Error("Unmarshal BiliDataResp error: %v, raw data: %v", err, body)
-		return nil, err
+		return resp, err
 	}
-	return resp.Data, nil
+	return resp, nil
 }
 
-func GetUserInfo(accessKey string) (interface{}, error) {
+func GetUserInfo(accessKey string) (dto.BiliLiveUserInfo, error) {
 	rawUrl := "http://api.live.bilibili.com/xlive/app-ucenter/v1/user/get_user_info"
 	data := map[string]string{
 		"access_key": accessKey,
@@ -62,16 +62,16 @@ func GetUserInfo(accessKey string) (interface{}, error) {
 	}
 	util.Signature(&data)
 	body, err := Get(rawUrl, util.Map2Params(data))
+	var resp dto.BiliLiveUserInfo
 	if err != nil {
-		util.Error("SignIn error: %v, data: %v", err, data)
-		return nil, err
+		util.Error("GetUserInfo error: %v, data: %v", err, data)
+		return resp, err
 	}
-	var resp dto.BiliDataResp
 	if err = json.Unmarshal(body, &resp); err != nil {
-		util.Error("Unmarshal BiliDataResp error: %v, raw data: %v", err, body)
-		return nil, err
+		util.Error("Unmarshal BiliLiveUserInfo error: %v, raw data: %v", err, body)
+		return resp, err
 	}
-	return resp.Data, nil
+	return resp, nil
 }
 
 func GetFansMedalAndRoomID(accessKey string) []dto.MedalList {
@@ -103,6 +103,7 @@ func GetFansMedalAndRoomID(accessKey string) []dto.MedalList {
 		if len(resp.Data.List) == 0 {
 			break
 		}
+		page++
 	}
 	return medals
 }
