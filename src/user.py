@@ -98,11 +98,13 @@ class BiliUser:
             await self.getMedals()  # 刷新勋章
             self.log.log("SUCCESS", "点赞、分享任务完成")
             finallyMedals = [medla for medla in self.medalsLower20 if medla['medal']['today_feed'] >= 1200]
-            failedMedals = [medla for medla in self.medalsLower20 if medla['medal']['today_feed'] < 1200]
-            msg = "20级以下牌子共 {} 个,完成任务 {} 个".format(len(self.medalsLower20), len(finallyMedals))
+            midMedals = [medla for medla in self.medalsLower20 if medla['medal']['today_feed'] >= 1100]
+            failedMedals = [medla for medla in self.medalsLower20 if medla['medal']['today_feed'] < 1100]
+            msg = "20级以下牌子共 {} 个,完成任务 {} 个亲密度大于1100, {} 个亲密度大于1200".format(
+                len(self.medalsLower20), len(midMedals), len(finallyMedals))
 
             self.log.log("INFO", msg)
-            self.log.log("WARNING", "失败房间: {}... {}个".format(
+            self.log.log("WARNING", "小于1100或失败房间: {}... {}个".format(
                 ' '.join([medals['anchor_info']['nick_name'] for medals in failedMedals[:5]]), len(failedMedals)))
             if self.retryTimes > self.maxRetryTimes:
                 self.log.log("ERROR", "任务重试次数过多,停止任务")
@@ -114,7 +116,7 @@ class BiliUser:
                 await self.likeandShare(failedMedals)
             else:
                 self.message.append(f"【{self.name}】 " + msg)
-                self.errmsg.append(f"【{self.name}】 " + "失败房间: {}... {}个".format(
+                self.errmsg.append(f"【{self.name}】 " + "小于1100或失败房间: {}... {}个".format(
                     ' '.join([medals['anchor_info']['nick_name'] for medals in failedMedals[:5]]), len(failedMedals)))
         except Exception as e:
             self.log.exception("点赞、分享任务异常")
