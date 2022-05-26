@@ -4,7 +4,7 @@
 <div align="center">
 <h1> 新 B 站粉丝牌助手
 </h1>
-<p>当前版本：0.1.0</p>
+<p>当前版本：0.2.2</p>
  </div>
 
 **TODO**
@@ -47,16 +47,19 @@ vim users.yaml
 
 ```yaml
 USERS:
-    - access_key: XXXXXX # 注意冒号后的空格 否则会读取失败
-      banned_uid: 789,100 # 黑名单UID 同上,填了后将不会打卡，点赞，分享
+    - access_key: XXXXXX # 注意冒号后的空格 否则会读取失败 英文冒号
+      banned_uid: 789,100 # 黑名单UID 同上,填了后将不会打卡，点赞，分享 用英文逗号分隔 不填则不限制
     - access_key:
       banned_uid:
+    # 注意对齐
     # 多用户以上格式添加
     # 井号后为注释 井号前后必须有空格
 CRON: # 0 0 * * *
 # 这里是 cron 表达式, 第一个参数是分钟, 第二个参数是小时
 # 例如每天凌晨0点0分执行一次为 0 0 * * *
 # 如果不填,则不使用内置定时器,填写正确后要保持该进程一直运行
+
+SENDKEY: # Server酱微信推送 可选 获取地址：https://sct.ftqq.com/
 ```
 
 请务必严格填写，否则程序将读取失败，可以在这里 [YAML、YML 在线编辑器(格式化校验)-BeJSON.com](https://www.bejson.com/validators/yaml_editor/) 验证你填的 yaml 是否正确
@@ -82,7 +85,11 @@ python main.py
 ### 更新日志
 
 -   2022-5-26
+
+    -   增加异常重试处理
+    -   更加详细的报错日志
     -   增加了微信通知功能
+
 -   2022-5-25
 
     -   B 站取消了分享的 10 分钟 CD，目前已改为异步执行
