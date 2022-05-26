@@ -5,6 +5,8 @@ import (
 	"MedalHelper/manager"
 	"MedalHelper/util"
 	"sync"
+
+	"github.com/TwiN/go-color"
 )
 
 type User struct {
@@ -38,8 +40,9 @@ func NewUser(accessKey string, uids []int) User {
 }
 
 func (user User) info(format string, v ...interface{}) {
-	format = user.Name + format
-	util.Info(format, v...)
+	format = color.Green + "[INFO] " + color.Reset + format
+	format = color.Reset + color.Blue + user.Name + color.Reset + " " + format
+	util.PrintColor(format, v...)
 }
 
 func (user *User) loginVerify() bool {
@@ -106,7 +109,7 @@ func (user *User) Init() bool {
 	}
 }
 
-func (user User) Start(wg sync.WaitGroup) {
+func (user User) Start(wg *sync.WaitGroup) {
 	if user.isLogin {
 		task := NewTask(user, []IAction{
 			&Like{},

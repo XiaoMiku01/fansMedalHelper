@@ -5,6 +5,7 @@ go 1.17
 require github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
 
 require (
+	github.com/TwiN/go-color v1.1.0 // indirect
 	github.com/gookit/config/v2 v2.1.0 // indirect
 	github.com/gookit/goutil v0.5.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect

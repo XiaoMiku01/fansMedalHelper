@@ -4,10 +4,18 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"time"
+
+	"github.com/TwiN/go-color"
 )
 
-// TODO: optimize this part
+var logger *log.Logger
+
+func init() {
+	logger = log.New(os.Stdout, color.Green, log.LstdFlags)
+}
+
 // Map2String can transfer a string-string map into a raw string
 func Map2string(params map[string]string) string {
 	var query string
@@ -60,4 +68,8 @@ func Info(format string, v ...interface{}) {
 func Error(format string, v ...interface{}) {
 	format = "[ERROR]" + format
 	log.Default().Printf(format, v...)
+}
+
+func PrintColor(format string, v ...interface{}) {
+	logger.Printf(format, v...)
 }
