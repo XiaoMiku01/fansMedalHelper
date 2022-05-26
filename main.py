@@ -10,7 +10,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 from src import BiliUser
 log = logger.bind(user="B站粉丝牌助手")
-__VERSION__ = "0.2.1"
+__VERSION__ = "0.2.2"
 
 warnings.filterwarnings(
     "ignore",
@@ -26,6 +26,7 @@ except Exception as e:
     exit(1)
 
 
+@log.catch
 async def main():
     messageList = []
     session = aiohttp.ClientSession()
@@ -34,8 +35,8 @@ async def main():
         if resp['version'] != __VERSION__:
             log.warning("当前版本为" + __VERSION__ + ",新版本为" + resp['version'] + ",请更新")
             log.warning("更新内容: " + resp['changelog'])
-            messageList.append(f"请前往更新内容:{resp['changelog']} ")
             messageList.append(f"当前版本: {__VERSION__} ,最新版本: {resp['version']}")
+            messageList.append(f"更新内容:{resp['changelog']} ")
         if resp['notice']:
             log.warning("公告: " + resp['notice'])
             messageList.append(f"公告: {resp['notice']}")
@@ -51,6 +52,7 @@ async def main():
             initTasks.append(biliUser.init())
             startTasks.append(biliUser.start())
             catchMsg.append(biliUser.sendmsg())
+
     await asyncio.gather(*initTasks)
     await asyncio.gather(*startTasks)
     messageList = list(itertools.chain.from_iterable(await asyncio.gather(*catchMsg)))
@@ -87,3 +89,4 @@ if __name__ == '__main__':
         log.info('外部调用,开启任务')
         loop = asyncio.get_event_loop()
         loop.run_until_complete(main())
+        log.info("任务结束")
