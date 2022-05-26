@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 	"time"
 )
@@ -29,4 +30,34 @@ func Map2Params(params map[string]string) url.Values {
 // GetTimestamp can obtain current ts
 func GetTimestamp() string {
 	return fmt.Sprintf("%d", time.Now().Unix())
+}
+
+// StringContains judge whether val exist in array
+func IntContain(array []int, val int) (index int) {
+	index = -1
+	for i := 0; i < len(array); i++ {
+		if array[i] == val {
+			index = i
+			return
+		}
+	}
+	return
+}
+
+/*****************************************
+ *              Log helpers              *
+ *****************************************/
+func Debug(format string, v ...interface{}) {
+	format = "[DEBUG]" + format
+	log.Default().Printf(format, v...)
+}
+
+func Info(format string, v ...interface{}) {
+	format = "[INFO]" + format
+	log.Default().Printf(format, v...)
+}
+
+func Error(format string, v ...interface{}) {
+	format = "[ERROR]" + format
+	log.Default().Printf(format, v...)
 }

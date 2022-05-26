@@ -5,6 +5,7 @@ go 1.17
 require github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
 
 require (
+	github.com/sethvargo/go-retry v0.2.3 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 )
