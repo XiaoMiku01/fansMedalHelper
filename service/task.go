@@ -11,29 +11,45 @@ import (
 	"github.com/sethvargo/go-retry"
 )
 
-// Action represent single action for single user
-type IAction interface{
-	// Exec the action, if fail execute retry backup
-	Exec(user User, medals []dto.MedalList, work sync.WaitGroup) []dto.MedalList
-	// Do represent real action
-	Do(user User, roomID int) bool
+// SyncAction implement IConcurrency, support synchronous actions
+type SyncAction struct{}
+
+func (a *SyncAction) Exec(user User, work sync.WaitGroup, child IExec) []dto.MedalList {
+	fail := make([]dto.MedalList, 0, len(user.medalsLow))
+	for _, medal := range user.medalsLow {
+		backup := retry.NewFibonacci(1 * time.Second)
+		backup = retry.WithMaxRetries(uint64(user.retryTimes), backup)
+		ctx := context.Background()
+		err := retry.Do(ctx, backup, func(ctx context.Context) error {
+			if ok := child.Do(user, medal.RoomInfo.RoomID); !ok {
+				return retry.RetryableError(errors.New("action fail"))
+			}
+			return nil
+		})
+		if err != nil {
+			fail = append(fail, medal)
+		}
+	}
+	work.Done()
+	return fail
 }
 
-type Action struct {}
+// AsyncAction implement IConcurrency, support asynchronous actions
+type AsyncAction struct{}
 
-func (a Action) Exec(user User, medals []dto.MedalList, work sync.WaitGroup) []dto.MedalList {
+func (a *AsyncAction) Exec(user User, work sync.WaitGroup, child IExec) []dto.MedalList {
 	mu := sync.Mutex{}
 	wg := sync.WaitGroup{}
-	fail := make([]dto.MedalList, 0, len(medals))
-	for _, medal := range medals {
+	fail := make([]dto.MedalList, 0, len(user.medalsLow))
+	for _, medal := range user.medalsLow {
 		wg.Add(1)
 		backup := retry.NewFibonacci(1 * time.Second)
 		backup = retry.WithMaxRetries(uint64(user.retryTimes), backup)
 		go func(medal dto.MedalList) {
 			ctx := context.Background()
 			err := retry.Do(ctx, backup, func(ctx context.Context) error {
-				if ok := a.Do(user, medal.RoomInfo.RoomID); !ok {
-					return retry.RetryableError(errors.New("Action fail"))
+				if ok := child.Do(user, medal.RoomInfo.RoomID); !ok {
+					return retry.RetryableError(errors.New("action fail"))
 				}
 				return nil
 			})
@@ -50,32 +66,43 @@ func (a Action) Exec(user User, medals []dto.MedalList, work sync.WaitGroup) []d
 	return fail
 }
 
-// Do is specific thing for each action
-func (Action) Do(user User, roomID int) bool {
-	return true
-}
-
-// Like include 3 * like
+// Like implement IExec, include 3 * like
 type Like struct {
-	Action
+	AsyncAction
 }
 
 func (Like) Do(user User, roomID int) bool {
-	return manager.LikeInteract(user.accessKey, roomID)
+	times := 3
+	for i := 0; i < times; i++ {
+		if ok := manager.LikeInteract(user.accessKey, roomID); !ok {
+			return false
+		}
+	}
+	user.info("点赞完成 %d", roomID)
+	return true
 }
 
-// Share include 5 * share
+// Share implement IExec, include 5 * share
 type Share struct {
-	Action
+	SyncAction
 }
 
 func (Share) Do(user User, roomID int) bool {
-	return manager.ShareRoom(user.accessKey, roomID)
+	times := 5
+	for i := 0; i < times; i++ {
+		if ok := manager.ShareRoom(user.accessKey, roomID); !ok {
+			return false
+		}
+		// FIXME: how long is waiting time for share?
+		time.NewTimer(1 * time.Second)
+	}
+	user.info("分享完成 %d", roomID)
+	return true
 }
 
-// Danmaku include sending daily danmu
+// Danmaku implement IExec, include sending daily danmu
 type Danmaku struct {
-	Action
+	SyncAction
 }
 
 func (Danmaku) Do(user User, roomID int) bool {
@@ -99,7 +126,7 @@ func (task *Task) Start() {
 	wg := sync.WaitGroup{}
 	for _, action := range task.actions {
 		wg.Add(1)
-		go action.Exec(task.User, task.medalsLow, wg)
+		go action.Exec(task.User, wg, action)
 	}
 	wg.Wait()
 }

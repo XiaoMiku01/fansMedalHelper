@@ -43,9 +43,10 @@ func exec() {
 	for _, user := range users {
 		if status := user.Init(); status {
 			wg.Add(1)
-			user.Start(wg)
+			go user.Start(wg)
 		}
 	}
+	wg.Wait()
 }
 
 func main() {

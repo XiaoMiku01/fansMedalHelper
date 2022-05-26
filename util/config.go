@@ -12,9 +12,10 @@ func init() {
 }
 
 type Config struct {
-	UserList []User `yaml:"USERS"`
-	Cron     string `yaml:"CRON"`
-	SendKey  string `yaml:"SENDKEY"`
+	UserList []User   `yaml:"USERS"`
+	Danmaku  []string `yaml:"DANMU"`
+	Cron     string   `yaml:"CRON"`
+	SendKey  string   `yaml:"SENDKEY"`
 }
 
 type User struct {

@@ -153,24 +153,6 @@ func ShareRoom(accessKey string, roomId int) bool {
 
 func SendDanmaku(accessKey string, roomId int) bool {
 	rawUrl := "http://api.live.bilibili.com/xlive/app-room/v1/dM/sendmsg"
-	// TODO: add message into config later
-	msgList := []string{
-		"(⌒▽⌒).",
-		"（￣▽￣）.",
-		"(=・ω・=).",
-		"(｀・ω・´).",
-		"(〜￣△￣)〜.",
-		"(･∀･).",
-		"(°∀°)ﾉ.",
-		"(￣3￣).",
-		"╮(￣▽￣)╭.",
-		"_(:3」∠)_.",
-		"(^・ω・^ ).",
-		"(●￣(ｴ)￣●).",
-		"ε=ε=(ノ≧∇≦)ノ.",
-		"⁄(⁄ ⁄•⁄ω⁄•⁄ ⁄)⁄.",
-		"←◡←.",
-	}
 	params := map[string]string{
 		"access_key": accessKey,
 		"actionKey":  "appkey",
@@ -179,7 +161,7 @@ func SendDanmaku(accessKey string, roomId int) bool {
 	}
 	data := map[string]string{
 		"cid":      fmt.Sprint(roomId),
-		"msg":      msgList[rand.Intn(len(msgList))],
+		"msg":      util.GlobalConfig.Danmaku[rand.Intn(len(util.GlobalConfig.Danmaku))],
 		"rnd":      util.GetTimestamp(),
 		"color":    "16777215",
 		"fontsize": "25",
