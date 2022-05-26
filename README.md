@@ -23,12 +23,22 @@
 
 ### 使用说明
 
+##### 环境需求：Python 版本大于 3.8
+
+> 克隆本项目 安装依赖
+
+```shell
+git clone https://github.com/XiaoMiku01/fansMedalHelper.git
+cd fansMedalHelper
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
 ##### 环境需求：Go 1.16 (低版本也可兼容)
 
 > 克隆本项目 安装依赖
 
 ```shell
-git clone https://github.com/ThreeCatsLoveFish/MedalHelper
+git clone https://github.com/ThreeCatsLoveFish/MedalHelper.git
 cd fansMedalHelper
 go get -u -v
 ```
