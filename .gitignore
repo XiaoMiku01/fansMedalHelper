@@ -1,3 +1,8 @@
 # Build file and log
+__pycache__
+*.json
+test.py
 output/
 login_info.txt
+users.yaml
+*.tmp
