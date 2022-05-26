@@ -4,7 +4,10 @@
 <div align="center">
 <h1> 新 B 站粉丝牌助手
 </h1>
+
 <p>当前版本：0.2.2</p>
+=======
+
  </div>
 
 **TODO**
@@ -63,8 +66,6 @@ SENDKEY: # Server酱微信推送 可选 获取地址：https://sct.ftqq.com/
 ```
 
 请务必严格填写，否则程序将读取失败，可以在这里 [YAML、YML 在线编辑器(格式化校验)-BeJSON.com](https://www.bejson.com/validators/yaml_editor/) 验证你填的 yaml 是否正确
-
-**注意！！ 如果填写 28 个或者很多需要分享的 UID，最好是设置每天 0 点运行，不然会出现还没运行完就到第二天刷新任务了**
 
 > 运行主程序
 
