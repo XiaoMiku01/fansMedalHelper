@@ -4,6 +4,7 @@ import (
 	"MedalHelper/dto"
 	"MedalHelper/manager"
 	"MedalHelper/util"
+	"sync"
 )
 
 type User struct {
@@ -94,16 +95,18 @@ func (user *User) setMedals() {
 	}
 }
 
-func (user *User) Init() {
+func (user *User) Init() bool {
 	if user.loginVerify() {
 		user.signIn()
 		user.setMedals()
+		return true
 	} else {
 		util.Error("用户登录失败, accessKey: %s", user.accessKey)
+		return false
 	}
 }
 
-func (user User) Start() {
+func (user User) Start(wg sync.WaitGroup) {
 	if user.isLogin {
 		task := NewTask(user, []IAction{
 			&Like{},
@@ -114,4 +117,5 @@ func (user User) Start() {
 	} else {
 		util.Error("用户未登录, accessKey: %s", user.accessKey)
 	}
+	wg.Done()
 }

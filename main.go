@@ -3,11 +3,22 @@ package main
 import (
 	"MedalHelper/service"
 	"MedalHelper/util"
+	"fmt"
+	"os"
 	"strconv"
 	"strings"
+	"sync"
 )
 
-func InitUsers() []service.User {
+func usage() {
+	fmt.Print(`Usage: main.go [command]
+
+command:
+    login   login bili account and get access key
+`)
+}
+
+func initUsers() []service.User {
 	users := make([]service.User, 0, 1)
 	for _, userInfo := range util.GlobalConfig.UserList {
 		banId := make([]int, 0)
@@ -26,10 +37,27 @@ func InitUsers() []service.User {
 	return users
 }
 
-func main() {
-	users := InitUsers()
+func exec() {
+	users := initUsers()
+	wg := sync.WaitGroup{}
 	for _, user := range users {
-		user.Init()
-		user.Start()
+		if status := user.Init(); status {
+			wg.Add(1)
+			user.Start(wg)
+		}
 	}
+}
+
+func main() {
+	args := os.Args
+	if len(args) > 1 {
+		if args[1] == "login" {
+			util.LoginBili()
+		} else {
+			usage()
+		}
+		return
+	}
+
+	exec()
 }

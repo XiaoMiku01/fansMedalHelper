@@ -1,7 +1,6 @@
-package main
+package util
 
 import (
-	"MedalHelper/util"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -18,10 +17,10 @@ func getQRcode() (string, string) {
 	api := "http://passport.bilibili.com/x/passport-tv-login/qrcode/auth_code"
 	data := map[string]string{
 		"local_id": "0",
-		"ts":       util.GetTimestamp(),
+		"ts":       GetTimestamp(),
 	}
-	util.Signature(&data)
-	data_string := strings.NewReader(util.Map2string(data))
+	Signature(&data)
+	data_string := strings.NewReader(Map2string(data))
 	client := http.Client{}
 	req, _ := http.NewRequest("POST", api, data_string)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -49,10 +48,10 @@ func verifyLogin(auth_code string) {
 		data := map[string]string{
 			"auth_code": auth_code,
 			"local_id":  "0",
-			"ts":        util.GetTimestamp(),
+			"ts":        GetTimestamp(),
 		}
-		util.Signature(&data)
-		data_string := strings.NewReader(util.Map2string(data))
+		Signature(&data)
+		data_string := strings.NewReader(Map2string(data))
 		client := http.Client{}
 		req, _ := http.NewRequest("POST", api, data_string)
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
