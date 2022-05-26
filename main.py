@@ -9,6 +9,7 @@ import itertools
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 from src import BiliUser
+from onepush import notify
 log = logger.bind(user="B站粉丝牌助手")
 __VERSION__ = "0.2.2"
 
@@ -57,8 +58,11 @@ async def main():
     await asyncio.gather(*startTasks)
     messageList = list(itertools.chain.from_iterable(await asyncio.gather(*catchMsg)))
     [log.info(message) for message in messageList]
-    if users.get('SENDKEY', ''):
-        await push_message(session, users['SENDKEY'], "\n\n".join(messageList))
+    if users.get('ONEPUSH'):
+        notifier = users['ONEPUSH']['notifier']
+        params = users['ONEPUSH']['params']
+        notify(notifier, title=f"【B站粉丝牌助手推送】", content="\n\n".join(messageList), **params)
+        log.info("%s已推送" % notifier)
     await session.close()
 
 
@@ -66,13 +70,6 @@ def run(*args, **kwargs):
     loop = asyncio.new_event_loop()
     loop.run_until_complete(main())
     log.info("任务结束,等待下一次执行")
-
-
-async def push_message(session, sendkey, message):
-    url = f"https://sctapi.ftqq.com/{sendkey}.send"
-    data = {"title": f"【B站粉丝牌助手推送】", "desp": message}
-    await session.post(url, data=data)
-    log.info("Server酱已推送")
 
 
 if __name__ == '__main__':
