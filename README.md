@@ -86,9 +86,23 @@ python main.py
 
 ### Docker
 
+```
+docker run -d \
+  --name=fansMedalHelper \
+  -e PUID=1000 \
+  -e PGID=1000 \
+  -e TZ=Asia/Shanghai \
+  -v /var/fansMedalHelperConfig:/fansMedalHelper/config \
+  --restart no \
+docker.io/dovela/fansmedalhelper:latest
+```
+config文件默认挂载到主机`/var/fansMedalHelperConfig`下
 
+主机还需要运行`wget https://github.com/dovela/fansMedalHelper/raw/master/config/users.yaml -O /var/fansMedalHelperConfig/users.yaml`
 
+config修改请参照上面
 
+目前只能执行一次，定时任务要在主机上设置cron
 
 ---
 
