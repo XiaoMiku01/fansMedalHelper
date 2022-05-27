@@ -131,7 +131,7 @@ class BiliUser:
                 self.log.log("WARNING", "成功率过低,重新执行任务")
                 self.retryTimes += 1
                 self.log.log("WARNING", "重试次数: {}/{}".format(self.retryTimes, self.maxRetryTimes))
-                await self.likeandShare(failedMedals)
+                await self.asynclikeandShare(failedMedals)
             else:
                 self.message.append(f"【{self.name}】 " + msg)
                 self.errmsg.append(f"【{self.name}】 " + "小于1100或失败房间: {}... {}个".format(
