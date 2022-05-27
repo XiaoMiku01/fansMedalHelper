@@ -103,6 +103,7 @@ class BiliUser:
                 await asyncio.gather(*tasks)
                 self.log.log("SUCCESS", f"{medal['anchor_info']['nick_name']} 点赞,分享成功 {index+1}/{len(self.medals)}")
                 await asyncio.sleep(max(self.config['LIKE_CD'], self.config['SHARE_CD']))
+            return
         try:
             self.log.log("INFO", "异步点赞、分享任务开始....")
             allTasks = []

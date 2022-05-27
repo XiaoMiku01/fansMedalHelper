@@ -10,7 +10,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 from src import BiliUser
 log = logger.bind(user="B站粉丝牌助手")
-__VERSION__ = "0.3.0"
+__VERSION__ = "0.3.1"
 
 warnings.filterwarnings(
     "ignore",
