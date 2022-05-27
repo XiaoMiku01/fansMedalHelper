@@ -61,7 +61,7 @@ async def main():
         if user['access_key']:
             biliUser = BiliUser(user['access_key'], user.get('white_uid', ''), user.get('banned_uid', ''), config)
             initTasks.append(biliUser.init())
-            # startTasks.append(biliUser.start())
+            startTasks.append(biliUser.start())
             catchMsg.append(biliUser.sendmsg())
 
     await asyncio.gather(*initTasks)
