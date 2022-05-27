@@ -177,11 +177,12 @@ class BiliUser:
         if self.isLogin:
             task = [self.asynclikeandShare(), self.sendDanmaku(), self.watchinglive()]
             await asyncio.wait(task)
-        await self.session.close()
+        # await self.session.close()
 
     async def sendmsg(self):
         await self.getMedals()
         if not self.isLogin:
+            await self.session.close()
             return self.message+self.errmsg
         nameList1, nameList2, nameList3, nameList4 = [], [], [], []
         for medal in self.medals:
