@@ -24,6 +24,7 @@
 ---
 
 ### 使用说明
+> 零基础用户看这里 [阿里云函数版](https://github.com/XiaoMiku01/fansMedalHelperVersion/blob/master/doc/README.md)  
 
 ##### 环境需求：Python 版本大于 3.8
 
@@ -132,7 +133,8 @@ python main.py
     -   自动切换运行目录
 
 ---
-
+### 友情链接  
+此脚本的Go语言实现版本 [ThreeCatsLoveFish/MedalHelper](https://github.com/ThreeCatsLoveFish/MedalHelper)
 ### 赞助
 
 ![](http://i0.hdslb.com/bfs/album/c267037c9513b8e44bc6ec95dbf772ff0439dce6.jpg)
