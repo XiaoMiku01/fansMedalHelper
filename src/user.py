@@ -217,7 +217,7 @@ class BiliUser:
             await asyncio.wait(tasks)
             heartNum += 1
             self.log.log(
-                "INFO", f"{' '.join([medal['anchor_info']['nick_name'] for medal in self.medalsLower20[:5]])} 等共 {len(self.medalsLower20)} 个房间的第{heartNum}次心跳包已发送")
+                "INFO", f"{' '.join([medal['anchor_info']['nick_name'] for medal in self.medalsLower20[:5]])} 等共 {len(self.medalsLower20)} 个房间的第{heartNum}次心跳包已发送（{heartNum}/{30}）")
             await asyncio.sleep(60)
             if heartNum >= 30:
                 break
