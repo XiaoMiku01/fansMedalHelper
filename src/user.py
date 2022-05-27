@@ -3,7 +3,7 @@ from aiohttp import ClientSession, ClientTimeout
 import sys
 import os
 import asyncio
-
+import uuid
 from loguru import logger
 
 sys.path.append(os.path.dirname(
@@ -16,11 +16,16 @@ logger.add(sys.stdout, colorize=True,
 
 class BiliUser:
 
-    def __init__(self, access_token: str, bannedUIDs: str = ''):
+    def __init__(self, access_token: str, whiteUIDs: str = '', bannedUIDs: str = '', config: dict = {}):
         from .api import BiliApi
         self.mid, self.name = 0, ""
         self.access_key = access_token  # 登录凭证
-        self.bannedUIDs = str(bannedUIDs)  # 被禁止的房间ID "1,2,3"
+        try:
+            self.whiteList = list(map(lambda x: int(x if x else 0), str(whiteUIDs).split(',')))  # 白名单UID
+            self.bannedList = list(map(lambda x: int(x if x else 0), str(bannedUIDs).split(',')))  # 黑名单
+        except ValueError:
+            raise ValueError("白名单或黑名单格式错误")
+        self.config = config
         self.medals = []  # 用户所有勋章
         self.medalsLower20 = []  # 用户所有勋章，等级小于20的
 
@@ -30,7 +35,8 @@ class BiliUser:
         self.retryTimes = 0  # 点赞任务重试次数
         self.maxRetryTimes = 10  # 最大重试次数
         self.message = []
-        self.errmsg = []
+        self.errmsg = ["错误日志："]
+        self.uuids = [str(uuid.uuid4()) for _ in range(2)]
 
     async def loginVerify(self) -> bool:
         '''
@@ -59,12 +65,6 @@ class BiliUser:
         self.log.log("INFO", "当前用户UL等级: {} ,还差 {} 经验升级".format(userInfo['exp']['user_level'], userInfo['exp']['unext']))
         self.message.append(
             f"【{self.name}】 UL等级: {userInfo['exp']['user_level']} ,还差 {userInfo['exp']['unext']} 经验升级")
-        try:
-            self.bannedList = list(map(lambda x: int(x if x else 0), self.bannedUIDs.split(',')))
-            if self.bannedList:
-                self.log.log("WARNING", "已设置黑名单UID: {}".format(' '.join(map(str, self.bannedList))))
-        except ValueError:
-            self.bannedList = []
 
     async def getMedals(self):
         '''
@@ -73,33 +73,51 @@ class BiliUser:
         self.medals.clear()
         self.medalsLower20.clear()
         async for medal in self.api.getFansMedalandRoomID():
-            if medal['medal']['target_id'] in self.bannedList:
-                continue
-            self.medals.append(medal) if medal['room_info']['room_id'] != 0 else None
+            if self.whiteList == [0]:
+                if medal['medal']['target_id'] in self.bannedList:
+                    self.log.warning(f"{medal['anchor_info']['nick_name']} 在黑名单中，已过滤")
+                    continue
+                self.medals.append(medal) if medal['room_info']['room_id'] != 0 else ...
+            else:
+                if medal['medal']['target_id'] in self.whiteList:
+                    self.medals.append(medal) if medal['room_info']['room_id'] != 0 else ...
+                    self.log.success(f"{medal['anchor_info']['nick_name']} 在白名单中，加入任务")
         [self.medalsLower20.append(medal) for medal in self.medals if medal['medal']['level'] < 20]
 
-    async def likeandShare(self, failedMedals: list = []):
+    async def asynclikeandShare(self, failedMedals: list = []):
         '''
-        点赞 *3 分享 * 5异步执行
+        点赞 *3 分享 * 5 
         '''
+        if self.config['LIKE_CD'] == 0:
+            self.log.log("INFO", "点赞任务已关闭")
+        elif self.config['SHARE_CD'] == 0:
+            self.log.log("INFO", "分享任务已关闭")
+        if self.config['LIKE_CD'] == 0 and self.config['SHARE_CD'] == 0:
+            return
+        if not self.config['ASYNC']:
+            self.log.log("INFO", "同步点赞、分享任务开始....")
+            for index, medal in enumerate(self.medals):
+                tasks = []
+                tasks.append(self.api.likeInteract(medal['room_info']['room_id'])) if self.config['LIKE_CD'] else ...
+                tasks.append(self.api.shareRoom(medal['room_info']['room_id'])) if self.config['SHARE_CD'] else ...
+                await asyncio.gather(*tasks)
+                self.log.log("SUCCESS", f"{medal['anchor_info']['nick_name']} 点赞,分享成功 {index+1}/{len(self.medals)}")
+                await asyncio.sleep(max(self.config['LIKE_CD'], self.config['SHARE_CD']))
         try:
-            self.log.log("INFO", "点赞、分享任务开始....")
+            self.log.log("INFO", "异步点赞、分享任务开始....")
             allTasks = []
             if not failedMedals:
-                for medal in self.medalsLower20:
-                    allTasks.append(self.api.likeInteract(medal['room_info']['room_id']))
-                    allTasks.append(self.api.shareRoom(medal['room_info']['room_id']))
-            else:
-                for medal in failedMedals:
-                    allTasks.append(self.api.likeInteract(medal['room_info']['room_id']))
-                    allTasks.append(self.api.shareRoom(medal['room_info']['room_id']))
+                failedMedals = self.medalsLower20
+            for medal in failedMedals:
+                allTasks.append(self.api.likeInteract(medal['room_info']['room_id'])) if self.config['LIKE_CD'] else ...
+                allTasks.append(self.api.shareRoom(medal['room_info']['room_id'])) if self.config['SHARE_CD'] else ...
             await asyncio.gather(*allTasks)
             await asyncio.sleep(10)
             await self.getMedals()  # 刷新勋章
             self.log.log("SUCCESS", "点赞、分享任务完成")
-            finallyMedals = [medla for medla in self.medalsLower20 if medla['medal']['today_feed'] >= 1200]
-            midMedals = [medla for medla in self.medalsLower20 if medla['medal']['today_feed'] >= 1100]
-            failedMedals = [medla for medla in self.medalsLower20 if medla['medal']['today_feed'] < 1100]
+            finallyMedals = [medla for medla in self.medalsLower20 if medal['medal']['today_feed'] >= 1200]
+            midMedals = [medla for medla in self.medalsLower20 if medal['medal']['today_feed'] >= 1100]
+            failedMedals = [medla for medla in self.medalsLower20 if medal['medal']['today_feed'] < 1100]
             msg = "20级以下牌子共 {} 个,完成任务 {} 个亲密度大于1100, {} 个亲密度大于1200".format(
                 len(self.medalsLower20), len(midMedals), len(finallyMedals))
 
@@ -126,6 +144,9 @@ class BiliUser:
         '''
         每日弹幕打卡
         '''
+        if not self.config['DANMAKU_CD']:
+            self.log.log("INFO", "弹幕任务关闭")
+            return
         self.log.log("INFO", "弹幕打卡任务开始....(预计 {} 秒完成)".format(len(self.medals) * 6))
         n = 0
         for medal in self.medals:
@@ -138,7 +159,7 @@ class BiliUser:
                 self.log.log("ERROR", "{} 房间弹幕打卡失败: {}".format(medal['anchor_info']['nick_name'], e))
                 self.errmsg.append(f"【{self.name}】 {medal['anchor_info']['nick_name']} 房间弹幕打卡失败: {str(e)}")
             finally:
-                await asyncio.sleep(6)
+                await asyncio.sleep(self.config['DANMAKU_CD'])
         self.log.log("SUCCESS", "弹幕打卡任务完成")
         self.message.append(f"【{self.name}】 弹幕打卡任务完成 {n}/{len(self.medals)}")
 
@@ -153,9 +174,49 @@ class BiliUser:
 
     async def start(self):
         if self.isLogin:
-            task = [self.likeandShare(), self.sendDanmaku()]
+            task = [self.asynclikeandShare(), self.sendDanmaku(), self.watchinglive()]
             await asyncio.wait(task)
         await self.session.close()
 
     async def sendmsg(self):
+        await self.getMedals()
+        if not self.isLogin:
+            return self.message+self.errmsg
+        nameList1, nameList2, nameList3, nameList4 = [], [], [], []
+        for medal in self.medals:
+            today_feed = medal['medal']['today_feed']
+            nick_name = medal['anchor_info']['nick_name']
+            if today_feed >= 1300:
+                nameList1.append(nick_name)
+            elif 1200 <= today_feed < 1300:
+                nameList2.append(nick_name)
+            elif 1100 <= today_feed < 1200:
+                nameList3.append(nick_name)
+            elif today_feed < 1100:
+                nameList4.append(nick_name)
+        self.message.append(f"【{self.name}】 今日亲密度获取情况如下：")
+
+        for l, n in zip([nameList1, nameList2, nameList3, nameList4], ["【1300及以上】", "【1200至1300】", "【1100至1200】", "【1100以下】"]):
+            if len(l) > 0:
+                self.message.append(f"{n}" + ' '.join(l[:5]) + f"{'等' if len(l) > 5 else ''}" + f' {len(l)}个')
+        await self.session.close()
         return self.message+self.errmsg
+
+    async def watchinglive(self):
+        if not self.config['WATCHINGLIVE']:
+            self.log.log("INFO", "每日30分钟任务关闭")
+            return
+        self.log.log("INFO", "每日30分钟任务开始")
+        heartNum = 0
+        while True:
+            tasks = []
+            for medal in self.medalsLower20:
+                tasks.append(self.api.heartbeat(medal['room_info']['room_id'], medal['medal']['target_id']))
+            await asyncio.wait(tasks)
+            heartNum += 1
+            self.log.log(
+                "INFO", f"{' '.join([medal['anchor_info']['nick_name'] for medal in self.medalsLower20[:5]])} 等共 {len(self.medalsLower20)} 个房间的第{heartNum}次心跳包已发送")
+            await asyncio.sleep(60)
+            if heartNum >= 30:
+                break
+        self.log.log("SUCCESS", "每日30分钟任务完成")

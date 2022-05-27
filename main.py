@@ -10,7 +10,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 from src import BiliUser
 log = logger.bind(user="B站粉丝牌助手")
-__VERSION__ = "0.2.2"
+__VERSION__ = "0.3.0"
 
 warnings.filterwarnings(
     "ignore",
@@ -20,9 +20,20 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)).split(__file__)[0])
 try:
     with open('users.yaml', 'r', encoding='utf-8') as f:
         users = yaml.load(f, Loader=yaml.FullLoader)
+        assert users['ASYNC'] in [0, 1], "ASYNC参数错误"
+        assert users['LIKE_CD'] >= 0, "LIKE_CD参数错误"
+        assert users['SHARE_CD'] >= 0, "SHARE_CD参数错误"
+        assert users['DANMAKU_CD'] >= 0, "DANMAKU_CD参数错误"
+        assert users['WATCHINGLIVE'] in [0, 1], "WATCHINGLIVE参数错误"
+        config = {
+            "ASYNC": users['ASYNC'],
+            "LIKE_CD": users['LIKE_CD'],
+            "SHARE_CD": users['SHARE_CD'],
+            "DANMAKU_CD": users['DANMAKU_CD'],
+            "WATCHINGLIVE": users['WATCHINGLIVE'],
+        }
 except Exception as e:
-    print("读取配置文件失败,请检查配置文件格式是否正确")
-    print(e)
+    log.error(f"读取配置文件失败,请检查配置文件格式是否正确: {e}")
     exit(1)
 
 
@@ -48,7 +59,7 @@ async def main():
     catchMsg = []
     for user in users['USERS']:
         if user['access_key']:
-            biliUser = BiliUser(user['access_key'], user.get('banned_uid', ''))
+            biliUser = BiliUser(user['access_key'], user.get('white_uid', ''), user.get('banned_uid', ''), config)
             initTasks.append(biliUser.init())
             startTasks.append(biliUser.start())
             catchMsg.append(biliUser.sendmsg())
