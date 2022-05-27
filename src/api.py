@@ -172,7 +172,7 @@ class BiliApi:
             await self.__post(url, data=SingableDict(data).signed, headers=self.headers.update({
                 "Content-Type": "application/x-www-form-urlencoded",
             }))
-            await asyncio.sleep(self.u.config['LIKE_CD'])
+            await asyncio.sleep(self.u.config['LIKE_CD'] if not self.u.config['ASYNC'] else 2)
 
     async def shareRoom(self, room_id: int):
         '''
@@ -191,7 +191,7 @@ class BiliApi:
             await self.__post(url, data=SingableDict(data).signed, headers=self.headers.update({
                 "Content-Type": "application/x-www-form-urlencoded",
             }))
-            await asyncio.sleep(self.u.config['SHARE_CD'])
+            await asyncio.sleep(self.u.config['SHARE_CD'] if not self.u.config['ASYNC'] else 5)
 
     async def sendDanmaku(self, room_id: int) -> str:
         '''
