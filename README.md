@@ -2,7 +2,7 @@
   <img src="https://s1.ax1x.com/2022/05/24/XPx1tx.png" width="200" height="200" alt="">
 </p>
 <div align="center">
-<h1> 新 B 站粉丝牌助手
+<h1> 新 B 站粉丝牌助手--morepush
 </h1>
 
 <p>当前版本：0.3.2</p>
@@ -23,7 +23,13 @@
 
 ---
 
-### 使用说明
+### 食用说明（morepush）  
+- [原版文档](https://github.com/XiaoMiku01/fansMedalHelper#readme)  
+  注意修改git clone地址
+- [onepush使用指南](https://github.com/Huli-fox/bili-live-heart/blob/morepush/docs/Guide/OnePush.md)  
+  按文档填写user.yaml中ONEPUSH参数即可
+
+### 使用说明（原版）
 > 零基础用户看这里 [阿里云函数版](https://github.com/XiaoMiku01/fansMedalHelperVersion/blob/master/doc/README.md)  
 
 ##### 环境需求：Python 版本大于 3.8
