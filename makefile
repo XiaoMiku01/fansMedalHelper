@@ -9,7 +9,7 @@ go.mod:
 	go	mod	tidy
 
 env:
-	pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+	pip	install	-r	requirements.txt	-i	https://pypi.tuna.tsinghua.edu.cn/simple
 
 main:
 	python	main.py

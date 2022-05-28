@@ -24,7 +24,7 @@
 ---
 
 ### 使用说明
-> 零基础用户看这里 [阿里云函数版](https://github.com/XiaoMiku01/fansMedalHelperVersion/blob/master/doc/README.md)  
+> 零基础用户看这里 [阿里云函数版](https://github.com/XiaoMiku01/fansMedalHelperVersion/blob/master/doc/README.md)
 
 ##### 环境需求：Python 版本大于 3.8
 
@@ -41,6 +41,12 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 下载获取工具 [Release B 站 access_key 获取工具 · XiaoMiku01/fansMedalHelper (github.com)](https://github.com/XiaoMiku01/fansMedalHelper/releases/tag/logintool)
 
 双击打开，扫码登录，会得到 `access_key` 即可
+
+> (可选)从源码编译 access_key 获取工具 (需要安装Go编译环境)
+
+```shell
+make login
+```
 
 > 填写配置文件 users.yaml
 
@@ -133,7 +139,7 @@ python main.py
     -   自动切换运行目录
 
 ---
-### 友情链接  
+### 友情链接
 此脚本的Go语言实现版本 [ThreeCatsLoveFish/MedalHelper](https://github.com/ThreeCatsLoveFish/MedalHelper)
 ### 赞助
 
