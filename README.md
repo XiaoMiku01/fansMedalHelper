@@ -31,10 +31,11 @@
 ---
 ### 友情链接  
 - 此脚本的Go语言实现版本 [ThreeCatsLoveFish/MedalHelper](https://github.com/ThreeCatsLoveFish/MedalHelper)
-- AW的B站挂机助手 [andywang425/BLTH](https://github.com/andywang425/BLTH) 平时我也在这个项目的反馈群里水群，有什么问题加这个项目的群找我就行  
+- AW的B站挂机助手 [andywang425/BLTH](https://github.com/andywang425/BLTH)
 
 ---  
 ### 问题反馈  
+- 反馈交流群：979245756
 - 提 issue  
 - B站私信 [晓小轩iAVA](https://space.bilibili.com/1772442517)  
 **提之前请明确问题主题和运行日志**  
