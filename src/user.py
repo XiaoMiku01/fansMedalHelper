@@ -180,8 +180,8 @@ class BiliUser:
         # await self.session.close()
 
     async def sendmsg(self):
-        await self.getMedals()
         if not self.isLogin:
+            await self.getMedals()
             await self.session.close()
             return self.message+self.errmsg
         nameList1, nameList2, nameList3, nameList4 = [], [], [], []
