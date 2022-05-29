@@ -104,6 +104,7 @@ func verify_login(auth_code string) {
 	req, _ := http.NewRequest("POST", api, data_string)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	for {
+		time.Sleep(10 * time.Second)
 		resp, err := client.Do(req)
 		if err != nil {
 			panic(err)
