@@ -151,6 +151,7 @@ class BiliApi:
             if first_flag and data['special_list']:
                 for item in data['special_list']:
                     yield item
+                self.u.wearedMedal = data['special_list'][0]
                 first_flag = False
             for item in data['list']:
                 yield item
@@ -341,6 +342,25 @@ class BiliApi:
              "appkey": Crypto.APPKEY,
              "ts": int(time.time()), }
         )
+        return await self.__post(url, data=SingableDict(data).signed, headers=self.headers.update({
+            "Content-Type": "application/x-www-form-urlencoded",
+        }))
+
+    async def wearMedal(self, medal_id: int):
+        '''
+        佩戴粉丝牌
+        '''
+        url = "https://api.live.bilibili.com/xlive/app-ucenter/v1/fansMedal/wear"
+        data = {
+            "access_key": self.u.access_key,
+            "actionKey": "appkey",
+            "appkey": Crypto.APPKEY,
+            "ts": int(time.time()),
+            "medal_id": medal_id,
+            "platform": "android",
+            "type": "1",
+            "version": "0",
+        }
         return await self.__post(url, data=SingableDict(data).signed, headers=self.headers.update({
             "Content-Type": "application/x-www-form-urlencoded",
         }))

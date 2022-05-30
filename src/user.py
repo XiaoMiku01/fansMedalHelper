@@ -136,8 +136,8 @@ class BiliUser:
                 await self.asynclikeandShare(failedMedals)
             else:
                 self.message.append(f"【{self.name}】 " + msg)
-                self.errmsg.append(f"【{self.name}】 " + "小于1100或失败房间: {}... {}个".format(
-                    ' '.join([medals['anchor_info']['nick_name'] for medals in failedMedals[:5]]), len(failedMedals)))
+                # self.errmsg.append(f"【{self.name}】 " + "小于1100或失败房间: {}... {}个".format(
+                # ' '.join([medals['anchor_info']['nick_name'] for medals in failedMedals[:5]]), len(failedMedals)))
         except Exception as e:
             self.log.exception("点赞、分享任务异常")
             self.errmsg.append(f"【{self.name}】 点赞、分享任务异常,请检查日志")
@@ -153,6 +153,7 @@ class BiliUser:
         n = 0
         for medal in self.medals:
             try:
+                await self.api.wearMedal(medal['medal']['medal_id'])
                 danmaku = await self.api.sendDanmaku(medal['room_info']['room_id'])
                 n += 1
                 self.log.log(
@@ -162,6 +163,8 @@ class BiliUser:
                 self.errmsg.append(f"【{self.name}】 {medal['anchor_info']['nick_name']} 房间弹幕打卡失败: {str(e)}")
             finally:
                 await asyncio.sleep(self.config['DANMAKU_CD'])
+        if hasattr(self, 'wearedMedal'):
+            await self.api.wearMedal(self.wearedMedal['medal']['medal_id'])
         self.log.log("SUCCESS", "弹幕打卡任务完成")
         self.message.append(f"【{self.name}】 弹幕打卡任务完成 {n}/{len(self.medals)}")
 
@@ -182,9 +185,9 @@ class BiliUser:
 
     async def sendmsg(self):
         if not self.isLogin:
-            await self.getMedals()
             await self.session.close()
             return self.message+self.errmsg
+        await self.getMedals()
         nameList1, nameList2, nameList3, nameList4 = [], [], [], []
         for medal in self.medalsLower20:
             today_feed = medal['medal']['today_feed']
@@ -203,7 +206,7 @@ class BiliUser:
             if len(l) > 0:
                 self.message.append(f"{n}" + ' '.join(l[:5]) + f"{'等' if len(l) > 5 else ''}" + f' {len(l)}个')
         await self.session.close()
-        return self.message+self.errmsg
+        return self.message+self.errmsg+['---']
 
     async def watchinglive(self):
         if not self.config['WATCHINGLIVE']:

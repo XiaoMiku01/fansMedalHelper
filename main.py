@@ -10,7 +10,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 from src import BiliUser
 log = logger.bind(user="B站粉丝牌助手")
-__VERSION__ = "0.3.2"
+__VERSION__ = "0.3.3"
 
 warnings.filterwarnings(
     "ignore",
@@ -63,7 +63,6 @@ async def main():
             initTasks.append(biliUser.init())
             startTasks.append(biliUser.start())
             catchMsg.append(biliUser.sendmsg())
-
     await asyncio.gather(*initTasks)
     await asyncio.gather(*startTasks)
     messageList = list(itertools.chain.from_iterable(await asyncio.gather(*catchMsg)))
@@ -71,6 +70,12 @@ async def main():
     if users.get('SENDKEY', ''):
         await push_message(session, users['SENDKEY'], "\n\n".join(messageList))
     await session.close()
+    if users.get('MOREPUSH', ''):
+        from onepush import notify
+        notifier = users['MOREPUSH']['notifier']
+        params = users['MOREPUSH']['params']
+        await notify(notifier, title=f"【B站粉丝牌助手推送】", content="\n\n".join(messageList), **params)
+        log.info(f"{notifier} 已推送")
 
 
 def run(*args, **kwargs):
