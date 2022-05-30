@@ -65,7 +65,7 @@ async def main():
             catchMsg.append(biliUser.sendmsg())
     await asyncio.gather(*initTasks)
     await asyncio.gather(*startTasks)
-    messageList = list(itertools.chain.from_iterable(await asyncio.gather(*catchMsg)))
+    messageList = messageList+ list(itertools.chain.from_iterable(await asyncio.gather(*catchMsg)))
     [log.info(message) for message in messageList]
     if users.get('SENDKEY', ''):
         await push_message(session, users['SENDKEY'], "\n\n".join(messageList))
