@@ -16,11 +16,11 @@ class Discord(Provider):
         'optional': ['title', 'content', 'username', 'avatar_url', 'color']
     }
 
-    def _prepare_url(self, webhook: str, **kwargs):
+    async def _prepare_url(self, webhook: str, **kwargs):
         self.url = webhook
         return self.url
 
-    def _prepare_data(self,
+    async def _prepare_data(self,
                       title: str = None,
                       content: str = None,
                       username: str = None,

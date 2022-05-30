@@ -17,10 +17,10 @@ class WechatWorkApp(Provider):
         'optional': ['title', 'content', 'touser', 'markdown']
     }
 
-    def _prepare_url(self, corpid: str, corpsecret: str, **kwargs):
+    async def _prepare_url(self, corpid: str, corpsecret: str, **kwargs):
         url = 'https://qyapi.weixin.qq.com/cgi-bin/gettoken'
         data = {'corpid': corpid, 'corpsecret': corpsecret}
-        response = self.request('get', url, params=data).json()
+        response = (await self.request('get', url, params=data)).json()
         access_token = response.get('access_token')
 
         self.url = self.base_url.format(access_token)

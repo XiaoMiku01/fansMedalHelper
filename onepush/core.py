@@ -31,10 +31,10 @@ class Provider(object):
         self.url = None
         self.data = None
 
-    def _prepare_url(self, **kwargs):
+    async def _prepare_url(self, **kwargs):
         ...
 
-    def _prepare_data(self, **kwargs):
+    async def _prepare_data(self, **kwargs):
         ...
 
     async def _send_message(self):
@@ -82,8 +82,8 @@ class Provider(object):
             return response
 
     async def notify(self, **kwargs):
-        self._prepare_url(**kwargs)
-        self._prepare_data(**kwargs)
+        await self._prepare_url(**kwargs)
+        await self._prepare_data(**kwargs)
         return await self._send_message()
 
 

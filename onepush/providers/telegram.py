@@ -17,11 +17,11 @@ class Telegram(Provider):
         'optional': ['title', 'content', 'api_url']
     }
 
-    def _prepare_url(self, token: str, api_url: str = 'api.telegram.org', **kwargs):
+    async def _prepare_url(self, token: str, api_url: str = 'api.telegram.org', **kwargs):
         self.url = self.base_url.format(api_url, token)
         return self.url
 
-    def _prepare_data(self, userid: str, title: str = None, content: str = None, **kwargs):
+    async def _prepare_data(self, userid: str, title: str = None, content: str = None, **kwargs):
         message = self.process_message(title, content)
         self.data = {
             'chat_id': userid,

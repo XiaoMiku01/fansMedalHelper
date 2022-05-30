@@ -17,11 +17,11 @@ class Qmsg(Provider):
         'optional': ['title', 'content', 'mode', 'qq']
     }
 
-    def _prepare_url(self, key: str, mode: str = 'send', **kwargs):
+    async def _prepare_url(self, key: str, mode: str = 'send', **kwargs):
         self.url = self.base_url.format(mode, key)
         return self.url
 
-    def _prepare_data(self,
+    async def _prepare_data(self,
                       title: str = None,
                       content: str = None,
                       qq: str = None,

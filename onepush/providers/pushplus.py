@@ -17,11 +17,11 @@ class PushPlus(Provider):
         'optional': ['title', 'topic', 'markdown']
     }
 
-    def _prepare_url(self, **kwargs):
+    async def _prepare_url(self, **kwargs):
         self.url = self.base_url
         return self.url
 
-    def _prepare_data(self,
+    async def _prepare_data(self,
                       content: str,
                       token: str = None,
                       title: str = None,

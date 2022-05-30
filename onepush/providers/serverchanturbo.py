@@ -17,11 +17,11 @@ class ServerChanTurbo(Provider):
         'optional': ['content', 'channel', 'openid']
     }
 
-    def _prepare_url(self, sctkey: str, **kwargs):
+    async def _prepare_url(self, sctkey: str, **kwargs):
         self.url = self.base_url.format(sctkey)
         return self.url
 
-    def _prepare_data(self,
+    async def _prepare_data(self,
                       title: str,
                       content: str = None,
                       channel: int = None,

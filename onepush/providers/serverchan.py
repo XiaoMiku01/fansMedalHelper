@@ -14,10 +14,10 @@ class ServerChan(Provider):
 
     _params = {'required': ['sckey', 'title'], 'optional': ['content']}
 
-    def _prepare_url(self, sckey: str, **kwargs):
+    async def _prepare_url(self, sckey: str, **kwargs):
         self.url = self.base_url.format(sckey)
         return self.url
 
-    def _prepare_data(self, title: str, content: str = None, **kwargs):
+    async def _prepare_data(self, title: str, content: str = None, **kwargs):
         self.data = {'text': title, 'desp': content}
         return self.data

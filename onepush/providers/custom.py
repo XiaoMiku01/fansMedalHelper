@@ -12,11 +12,11 @@ class Custom(Provider):
 
     _params = {'required': ['url'], 'optional': ['method', 'datatype', 'data']}
 
-    def _prepare_url(self, url: str, **kwargs):
+    async def _prepare_url(self, url: str, **kwargs):
         self.url = url
         return self.url
 
-    def _prepare_data(self,
+    async def _prepare_data(self,
                       method: str = 'post',
                       datatype: str = 'data',
                       data: dict = None,

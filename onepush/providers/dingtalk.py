@@ -34,7 +34,7 @@ class DingTalk(Provider):
         sign = urllib.parse.quote_plus(base64.b64encode(hmac_code))
         return timestamp, sign
 
-    def _prepare_url(self, token: str, secret: str = None, **kwargs):
+    async def _prepare_url(self, token: str, secret: str = None, **kwargs):
         self.url = token
         if 'https' not in token or 'http' not in token:
             self.url = self.base_url.format(token)
@@ -45,11 +45,11 @@ class DingTalk(Provider):
                 timestamp, sign)
         return self.url
 
-    def _prepare_data(self,
-                      title: str = None,
-                      content: str = None,
-                      markdown: bool = False,
-                      **kwargs):
+    async def _prepare_data(self,
+                            title: str = None,
+                            content: str = None,
+                            markdown: bool = False,
+                            **kwargs):
         message = self.process_message(title, content)
         self.data = {'msgtype': 'text', 'text': {'content': message}}
 
