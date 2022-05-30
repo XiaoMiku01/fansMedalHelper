@@ -2,7 +2,7 @@
   <img src="https://s1.ax1x.com/2022/05/24/XPx1tx.png" width="200" height="200" alt="">
 </p>
 <div align="center">
-<h1> 新 B 站粉丝牌助手--morepush
+<h1> 新 B 站粉丝牌助手
 </h1>
 
 <p>当前版本：0.3.2</p>
@@ -32,15 +32,17 @@
 **请细心阅读**
 
 ---
-### 友情链接  
-- 此脚本的Go语言实现版本 [ThreeCatsLoveFish/MedalHelper](https://github.com/ThreeCatsLoveFish/MedalHelper)
-- AW的B站挂机助手 [andywang425/BLTH](https://github.com/andywang425/BLTH) 平时我也在这个项目的反馈群里水群，有什么问题加这个项目的群找我就行  
 
----  
 ### 问题反馈  
+- 反馈交流群：979245756
 - 提 issue  
 - B站私信 [晓小轩iAVA](https://space.bilibili.com/1772442517)  
 **提之前请明确问题主题和运行日志**  
+
+---  
+### 友情链接  
+- 此脚本的Go语言实现版本 [ThreeCatsLoveFish/MedalHelper](https://github.com/ThreeCatsLoveFish/MedalHelper)
+- AW的B站挂机助手 [andywang425/BLTH](https://github.com/andywang425/BLTH)
 
 ---  
 ### 赞助
