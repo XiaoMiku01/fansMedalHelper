@@ -96,12 +96,12 @@ class BiliUser:
             return
         if not self.config['ASYNC']:
             self.log.log("INFO", "同步点赞、分享任务开始....")
-            for index, medal in enumerate(self.medals):
+            for index, medal in enumerate(self.medalsLower20):
                 tasks = []
                 tasks.append(self.api.likeInteract(medal['room_info']['room_id'])) if self.config['LIKE_CD'] else ...
                 tasks.append(self.api.shareRoom(medal['room_info']['room_id'])) if self.config['SHARE_CD'] else ...
                 await asyncio.gather(*tasks)
-                self.log.log("SUCCESS", f"{medal['anchor_info']['nick_name']} 点赞,分享成功 {index+1}/{len(self.medals)}")
+                self.log.log("SUCCESS", f"{medal['anchor_info']['nick_name']} 点赞,分享成功 {index+1}/{len(self.medalsLower20)}")
                 await asyncio.sleep(max(self.config['LIKE_CD'], self.config['SHARE_CD']))
             return
         try:
@@ -185,7 +185,7 @@ class BiliUser:
             await self.session.close()
             return self.message+self.errmsg
         nameList1, nameList2, nameList3, nameList4 = [], [], [], []
-        for medal in self.medals:
+        for medal in self.medalsLower20:
             today_feed = medal['medal']['today_feed']
             nick_name = medal['anchor_info']['nick_name']
             if today_feed >= 1300:
@@ -196,7 +196,7 @@ class BiliUser:
                 nameList3.append(nick_name)
             elif today_feed < 1100:
                 nameList4.append(nick_name)
-        self.message.append(f"【{self.name}】 今日亲密度获取情况如下：")
+        self.message.append(f"【{self.name}】 今日亲密度获取情况如下（20级以下）：")
 
         for l, n in zip([nameList1, nameList2, nameList3, nameList4], ["【1300及以上】", "【1200至1300】", "【1100至1200】", "【1100以下】"]):
             if len(l) > 0:
