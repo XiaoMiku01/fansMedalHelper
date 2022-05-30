@@ -71,14 +71,16 @@ def retry(tries=3, interval=1):
                         else:
                             raise e
                     if count > tries:
+                        log.error(f"API {urlparse(args[1]).path} 调用出现异常: {str(e)}")
                         raise e
                     else:
-                        log.error(f"API {urlparse(args[1]).path} 调用出现异常: {str(e)}，重试中，第{count}次重试")
+                        # log.error(f"API {urlparse(args[1]).path} 调用出现异常: {str(e)}，重试中，第{count}次重试")
                         await asyncio.sleep(interval)
                     func.isRetryable = True
                 else:
                     if func.isRetryable:
-                        log.success(f"重试成功")
+                        pass
+                        # log.success(f"重试成功")
                     return result
         return wrapper
     return decorate

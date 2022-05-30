@@ -101,7 +101,8 @@ class BiliUser:
                 tasks.append(self.api.likeInteract(medal['room_info']['room_id'])) if self.config['LIKE_CD'] else ...
                 tasks.append(self.api.shareRoom(medal['room_info']['room_id'])) if self.config['SHARE_CD'] else ...
                 await asyncio.gather(*tasks)
-                self.log.log("SUCCESS", f"{medal['anchor_info']['nick_name']} 点赞,分享成功 {index+1}/{len(self.medalsLower20)}")
+                self.log.log(
+                    "SUCCESS", f"{medal['anchor_info']['nick_name']} 点赞,分享成功 {index+1}/{len(self.medalsLower20)}")
                 await asyncio.sleep(max(self.config['LIKE_CD'], self.config['SHARE_CD']))
             return
         try:
