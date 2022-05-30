@@ -42,6 +42,7 @@
 
 ### 友情链接
 
+-   感谢 银弹 的 推送库 [y1ndan/onepush](https://github.com/y1ndan/onepush)
 -   此脚本的 Go 语言实现版本 [ThreeCatsLoveFish/MedalHelper](https://github.com/ThreeCatsLoveFish/MedalHelper)
 -   AW 的 B 站挂机助手 [andywang425/BLTH](https://github.com/andywang425/BLTH)
 
