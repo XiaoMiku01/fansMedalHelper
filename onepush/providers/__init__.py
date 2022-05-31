@@ -16,6 +16,7 @@ from . import serverchanturbo
 from . import telegram
 from . import wechatworkapp
 from . import wechatworkbot
+from . import lark
 
 _all_providers = {
     bark.Bark.name: bark.Bark,
@@ -29,5 +30,6 @@ _all_providers = {
     serverchanturbo.ServerChanTurbo.name: serverchanturbo.ServerChanTurbo,
     telegram.Telegram.name: telegram.Telegram,
     wechatworkapp.WechatWorkApp.name: wechatworkapp.WechatWorkApp,
-    wechatworkbot.WechatWorkBot.name: wechatworkbot.WechatWorkBot
+    wechatworkbot.WechatWorkBot.name: wechatworkbot.WechatWorkBot,
+    lark.Lark.name: lark.Lark
 }

@@ -25,12 +25,14 @@ try:
         assert users['SHARE_CD'] >= 0, "SHARE_CD参数错误"
         assert users['DANMAKU_CD'] >= 0, "DANMAKU_CD参数错误"
         assert users['WATCHINGLIVE'] in [0, 1], "WATCHINGLIVE参数错误"
+        assert users['WEARMEDAL'] in [0, 1], "WEARMEDAL参数错误"
         config = {
             "ASYNC": users['ASYNC'],
             "LIKE_CD": users['LIKE_CD'],
             "SHARE_CD": users['SHARE_CD'],
             "DANMAKU_CD": users['DANMAKU_CD'],
             "WATCHINGLIVE": users['WATCHINGLIVE'],
+            "WEARMEDAL": users['WEARMEDAL'],
         }
 except Exception as e:
     log.error(f"读取配置文件失败,请检查配置文件格式是否正确: {e}")
@@ -65,16 +67,16 @@ async def main():
             catchMsg.append(biliUser.sendmsg())
     await asyncio.gather(*initTasks)
     await asyncio.gather(*startTasks)
-    messageList = messageList+ list(itertools.chain.from_iterable(await asyncio.gather(*catchMsg)))
+    messageList = messageList + list(itertools.chain.from_iterable(await asyncio.gather(*catchMsg)))
     [log.info(message) for message in messageList]
     if users.get('SENDKEY', ''):
-        await push_message(session, users['SENDKEY'], "\n\n".join(messageList))
+        await push_message(session, users['SENDKEY'], "  \n".join(messageList))
     await session.close()
     if users.get('MOREPUSH', ''):
         from onepush import notify
         notifier = users['MOREPUSH']['notifier']
         params = users['MOREPUSH']['params']
-        await notify(notifier, title=f"【B站粉丝牌助手推送】", content="\n\n".join(messageList), **params)
+        await notify(notifier, title=f"【B站粉丝牌助手推送】", content="  \n".join(messageList), **params)
         log.info(f"{notifier} 已推送")
 
 

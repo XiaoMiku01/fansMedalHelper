@@ -122,7 +122,6 @@ class BiliUser:
             failedMedals = [medla for medla in self.medalsLower20 if medal['medal']['today_feed'] < 1100]
             msg = "20级以下牌子共 {} 个,完成任务 {} 个亲密度大于1100, {} 个亲密度大于1200".format(
                 len(self.medalsLower20), len(midMedals), len(finallyMedals))
-
             self.log.log("INFO", msg)
             self.log.log("WARNING", "小于1100或失败房间: {}... {}个".format(
                 ' '.join([medals['anchor_info']['nick_name'] for medals in failedMedals[:5]]), len(failedMedals)))
@@ -135,7 +134,8 @@ class BiliUser:
                 self.log.log("WARNING", "重试次数: {}/{}".format(self.retryTimes, self.maxRetryTimes))
                 await self.asynclikeandShare(failedMedals)
             else:
-                self.message.append(f"【{self.name}】 " + msg)
+                pass
+                # self.message.append(f"【{self.name}】 " + msg)
                 # self.errmsg.append(f"【{self.name}】 " + "小于1100或失败房间: {}... {}个".format(
                 # ' '.join([medals['anchor_info']['nick_name'] for medals in failedMedals[:5]]), len(failedMedals)))
         except Exception as e:
@@ -149,11 +149,11 @@ class BiliUser:
         if not self.config['DANMAKU_CD']:
             self.log.log("INFO", "弹幕任务关闭")
             return
-        self.log.log("INFO", "弹幕打卡任务开始....(预计 {} 秒完成)".format(len(self.medals) * 6))
+        self.log.log("INFO", "弹幕打卡任务开始....(预计 {} 秒完成)".format(len(self.medals) * self.config['DANMAKU_CD']))
         n = 0
         for medal in self.medals:
             try:
-                await self.api.wearMedal(medal['medal']['medal_id'])
+                (await self.api.wearMedal(medal['medal']['medal_id'])) if self.config['WEARMEDAL'] else ...
                 danmaku = await self.api.sendDanmaku(medal['room_info']['room_id'])
                 n += 1
                 self.log.log(
@@ -164,7 +164,7 @@ class BiliUser:
             finally:
                 await asyncio.sleep(self.config['DANMAKU_CD'])
         if hasattr(self, 'wearedMedal'):
-            await self.api.wearMedal(self.wearedMedal['medal']['medal_id'])
+            (await self.api.wearMedal(self.wearedMedal['medal']['medal_id'])) if self.config['WEARMEDAL'] else ...
         self.log.log("SUCCESS", "弹幕打卡任务完成")
         self.message.append(f"【{self.name}】 弹幕打卡任务完成 {n}/{len(self.medals)}")
 
