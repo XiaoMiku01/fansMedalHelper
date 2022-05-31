@@ -44,7 +44,8 @@ async def main():
     try:
         resp = await (await session.get("http://version.fansmedalhelper.1961584514352337.cn-hangzhou.fc.devsapp.net/")).json()
         if resp['version'] != __VERSION__:
-            log.warning("当前版本为" + __VERSION__ + ",新版本为" + resp['version'] + ",请更新")
+            log.warning("当前版本为" + __VERSION__ + ",新版本为" +
+                        resp['version'] + ",请更新")
             log.warning("更新内容: " + resp['changelog'])
             messageList.append(f"当前版本: {__VERSION__} ,最新版本: {resp['version']}")
             messageList.append(f"更新内容:{resp['changelog']} ")
@@ -54,22 +55,38 @@ async def main():
     except Exception:
         messageList.append("检查版本失败")
         log.warning("检查版本失败")
+
     initTasks = []
     startTasks = []
     catchMsg = []
     for user in users['USERS']:
         if user['access_key']:
-            biliUser = BiliUser(user['access_key'], user.get('white_uid', ''), user.get('banned_uid', ''), config)
+            biliUser = BiliUser(user['access_key'], user.get(
+                'white_uid', ''), user.get('banned_uid', ''), config)
             initTasks.append(biliUser.init())
             startTasks.append(biliUser.start())
             catchMsg.append(biliUser.sendmsg())
     await asyncio.gather(*initTasks)
     await asyncio.gather(*startTasks)
-    messageList = messageList+ list(itertools.chain.from_iterable(await asyncio.gather(*catchMsg)))
+    messageList = messageList + list(itertools.chain.from_iterable(await asyncio.gather(*catchMsg)))
     [log.info(message) for message in messageList]
     if users.get('SENDKEY', ''):
         await push_message(session, users['SENDKEY'], "\n\n".join(messageList))
+
+    if users.get('LARK_BOT', ''):
+        # WEBHOOK_URL 机器人的Webhook
+        WEBHOOK_URL = users['LARK_BOT']['WEBHOOK_URL']
+        # 无加密发送
+        resp = await session.post(url=WEBHOOK_URL, json={"msg_type": "text", "content": {"text": "【B站粉丝牌助手推送】:"+messageList}})
+        resp.raise_for_status()
+        result = resp.json()
+        if result.get("code") and result["code"] != 0:
+            log.info(result["msg"])
+            return
+        log.info("飞书lark机器人消息发送成功")
+
     await session.close()
+
     if users.get('MOREPUSH', ''):
         from onepush import notify
         notifier = users['MOREPUSH']['notifier']
