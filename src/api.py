@@ -143,7 +143,7 @@ class BiliApi:
             "appkey": Crypto.APPKEY,
             "ts": int(time.time()),
             "page": 1,
-            "page_size": 100,
+            "page_size": 50,
         }
         first_flag = True
         while True:

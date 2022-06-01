@@ -10,7 +10,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 from src import BiliUser
 log = logger.bind(user="B站粉丝牌助手")
-__VERSION__ = "0.3.3"
+__VERSION__ = "0.3.4"
 
 warnings.filterwarnings(
     "ignore",
@@ -65,9 +65,13 @@ async def main():
             initTasks.append(biliUser.init())
             startTasks.append(biliUser.start())
             catchMsg.append(biliUser.sendmsg())
-    await asyncio.gather(*initTasks)
-    await asyncio.gather(*startTasks)
-    messageList = messageList + list(itertools.chain.from_iterable(await asyncio.gather(*catchMsg)))
+    try:
+        await asyncio.gather(*initTasks)
+        await asyncio.gather(*startTasks)
+        messageList = messageList + list(itertools.chain.from_iterable(await asyncio.gather(*catchMsg)))
+    except Exception as e:
+        log.exception(e)
+        messageList.append(f"任务执行失败: {e}")
     [log.info(message) for message in messageList]
     if users.get('SENDKEY', ''):
         await push_message(session, users['SENDKEY'], "  \n".join(messageList))
