@@ -68,6 +68,8 @@ def retry(tries=3, interval=1):
                             raise e
                         elif e.code == 10030:
                             await asyncio.sleep(10)
+                        elif e.code == -504:
+                            pass
                         else:
                             raise e
                     if count > tries:
