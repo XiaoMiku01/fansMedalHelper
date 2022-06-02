@@ -27,7 +27,7 @@
 ### 使用说明
 
 详细文档在这里 👉 [文档](https://xiaomiku01.github.io/fansMedalHelperVersion/)  
-打不开的用这个镜像文档 👉 [镜像](https://fansmedalhelperdocs.pages.dev/)  
+打不开的用这个镜像文档 👉 [镜像](https://doc.loveava.top/)  
 **请细心阅读**
 
 ---
