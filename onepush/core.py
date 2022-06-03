@@ -8,7 +8,7 @@
 from loguru import logger
 
 # import requests
-from aiohttp import ClientSSLError, ClientSession
+from aiohttp import ClientSSLError, ClientSession, TCPConnector
 # from requests.exceptions import SSLError
 
 from .exceptions import NoSuchNotifierError
@@ -30,6 +30,7 @@ class Provider(object):
         self.datatype = 'data'
         self.url = None
         self.data = None
+        self.proxy = None
 
     async def _prepare_url(self, **kwargs):
         ...
@@ -63,17 +64,22 @@ class Provider(object):
             message = title
         return message
 
-    @staticmethod
-    async def request(method, url, **kwargs):
+    # @staticmethod
+    async def request(self, method, url: str, **kwargs):
         # session = requests.Session()
-        session = ClientSession()
+
+        session = ClientSession() if not self.proxy else ClientSession(connector=TCPConnector(verify_ssl=False))
         response = None
         try:
-            response = await session.request(method, url, **kwargs)
+            if self.proxy:
+                response = await session.request(method, url.replace('https', 'http'), proxy=self.proxy, **kwargs)
+            else:
+                response = await session.request(method, url, **kwargs)
             # log.debug('Response: {}'.format(response.text))
         except ClientSSLError as e:
             log.error(e)
-            response = await session.request(method, url, verify=False, **kwargs)
+            session = ClientSession(connector=TCPConnector(verify_ssl=False))
+            response = await session.request(method, url.replace('https', 'http'), proxy=self.proxy, **kwargs)
             # log.debug('Response: {}'.format(response.text))
         except Exception as e:
             log.error(e)
@@ -82,6 +88,7 @@ class Provider(object):
             return response
 
     async def notify(self, **kwargs):
+        self.proxy = kwargs.get('proxy')
         await self._prepare_url(**kwargs)
         await self._prepare_data(**kwargs)
         return await self._send_message()

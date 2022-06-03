@@ -34,6 +34,7 @@ try:
             "WATCHINGLIVE": users['WATCHINGLIVE'],
             "WEARMEDAL": users['WEARMEDAL'],
             "SIGNINGROUP": users.get('SIGNINGROUP', 2),
+            "PROXY": users.get('PROXY'),
         }
 except Exception as e:
     log.error(f"读取配置文件失败,请检查配置文件格式是否正确: {e}")
@@ -82,7 +83,7 @@ async def main():
         from onepush import notify
         notifier = users['MOREPUSH']['notifier']
         params = users['MOREPUSH']['params']
-        await notify(notifier, title=f"【B站粉丝牌助手推送】", content="  \n".join(messageList), **params)
+        await notify(notifier, title=f"【B站粉丝牌助手推送】", content="  \n".join(messageList), **params, proxy=config.get('PROXY'))
         log.info(f"{notifier} 已推送")
 
 
