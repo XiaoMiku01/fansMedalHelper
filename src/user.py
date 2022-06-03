@@ -179,7 +179,7 @@ class BiliUser:
 
     async def start(self):
         if self.isLogin:
-            task = [self.asynclikeandShare(), self.sendDanmaku(), self.watchinglive()]
+            task = [self.asynclikeandShare(), self.sendDanmaku(), self.watchinglive(), self.signInGroups()]
             await asyncio.wait(task)
         # await self.session.close()
 
@@ -226,3 +226,32 @@ class BiliUser:
             if heartNum >= 30:
                 break
         self.log.log("SUCCESS", "每日30分钟任务完成")
+
+    async def signInGroups(self):
+        if not self.config['SIGNINGROUP']:
+            self.log.log("INFO", "应援团签到任务关闭")
+            return
+        self.log.log("INFO", "应援团签到任务开始")
+        try:
+            n = 0
+            async for group in self.api.getGroups():
+                if group['owner_uid'] == self.mid:
+                    continue
+                try:
+                    await self.api.signInGroups(group['group_id'], group['owner_uid'])
+                except Exception as e:
+                    self.log.log("ERROR", group['group_name'] + " 签到失败")
+                    self.errmsg.append(f"应援团签到失败: {e}")
+                    continue
+                self.log.log("DEBUG", group['group_name'] + " 签到成功")
+                await asyncio.sleep(self.config['SIGNINGROUP_CD'])
+                n += 1
+            if n:
+                self.log.log("SUCCESS", f"应援团签到任务完成 {n}/{n}")
+                self.message.append(f" 应援团签到任务完成 {n}/{n}")
+            else:
+                self.log.log("WARNING", "没有加入应援团")
+        except Exception as e:
+            self.log.exception(e)
+            self.log.log("ERROR", "应援团签到任务失败: " + str(e))
+            self.errmsg.append("应援团签到任务失败: " + str(e))

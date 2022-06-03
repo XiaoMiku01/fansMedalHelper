@@ -33,6 +33,7 @@ try:
             "DANMAKU_CD": users['DANMAKU_CD'],
             "WATCHINGLIVE": users['WATCHINGLIVE'],
             "WEARMEDAL": users['WEARMEDAL'],
+            "SIGNINGROUP": users.get('SIGNINGROUP', 2),
         }
 except Exception as e:
     log.error(f"读取配置文件失败,请检查配置文件格式是否正确: {e}")
