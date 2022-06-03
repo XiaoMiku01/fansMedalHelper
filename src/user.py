@@ -244,7 +244,7 @@ class BiliUser:
                     self.errmsg.append(f"应援团签到失败: {e}")
                     continue
                 self.log.log("DEBUG", group['group_name'] + " 签到成功")
-                await asyncio.sleep(self.config['SIGNINGROUP_CD'])
+                await asyncio.sleep(self.config['SIGNINGROUP'])
                 n += 1
             if n:
                 self.log.log("SUCCESS", f"应援团签到任务完成 {n}/{n}")
