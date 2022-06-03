@@ -44,12 +44,13 @@ async def main():
     messageList = []
     session = aiohttp.ClientSession()
     try:
+        log.warning("当前版本为: " + __VERSION__)
         resp = await (await session.get("http://version.fansmedalhelper.1961584514352337.cn-hangzhou.fc.devsapp.net/")).json()
         if resp['version'] != __VERSION__:
-            log.warning("当前版本为" + __VERSION__ + ",新版本为" + resp['version'] + ",请更新")
+            log.warning("新版本为: " + resp['version'] + ",请更新")
             log.warning("更新内容: " + resp['changelog'])
             messageList.append(f"当前版本: {__VERSION__} ,最新版本: {resp['version']}")
-            messageList.append(f"更新内容:{resp['changelog']} ")
+            messageList.append(f"更新内容: {resp['changelog']} ")
         if resp['notice']:
             log.warning("公告: " + resp['notice'])
             messageList.append(f"公告: {resp['notice']}")
@@ -109,6 +110,7 @@ if __name__ == '__main__':
         schedulers.start()
     else:
         log.info('外部调用,开启任务')
-        loop = asyncio.get_event_loop()
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         loop.run_until_complete(main())
         log.info("任务结束")
