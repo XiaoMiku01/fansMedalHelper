@@ -4,6 +4,7 @@ import sys
 import os
 import asyncio
 import uuid
+from ruamel import yaml
 from loguru import logger
 
 sys.path.append(os.path.dirname(
@@ -16,10 +17,11 @@ logger.add(sys.stdout, colorize=True,
 
 class BiliUser:
 
-    def __init__(self, access_token: str, whiteUIDs: str = '', bannedUIDs: str = '', config: dict = {}):
+    def __init__(self, access_token: str, refresh_token: str, whiteUIDs: str = '', bannedUIDs: str = '', config: dict = {}):
         from .api import BiliApi
         self.mid, self.name = 0, ""
         self.access_key = access_token  # 登录凭证
+        self.refresh_key = refresh_token  # 刷新凭证
         try:
             self.whiteList = list(map(lambda x: int(x if x else 0), str(whiteUIDs).split(',')))  # 白名单UID
             self.bannedList = list(map(lambda x: int(x if x else 0), str(bannedUIDs).split(',')))  # 黑名单
@@ -42,6 +44,26 @@ class BiliUser:
         '''
         登录验证
         '''
+        import time
+        self.log = logger.bind(user="B站粉丝牌助手")
+        checkInfo = await self.api.checkToken()
+        expired = time.strftime("%Y年%m月%d日 %H:%M:%S", time.localtime((time.time() + checkInfo["expires_in"])))
+        self.log.log("INFO", "令牌有效期至: {expired}".format(expired=expired))
+        if checkInfo["expires_in"] < 14400:
+            self.log.log("WARNING", "令牌即将过期, 正在申请更换...")
+            resp = await self.api.refreshToken()
+            with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "users.yaml"), "r", encoding="utf-8") as f:
+                users = yaml.round_trip_load(f)
+                f.close()
+            for user in users["USERS"]:
+                if checkInfo["access_token"] == user["access_key"]:
+                    user["access_key"], self.access_key = resp["token_info"]["access_token"]
+                    user["refresh_key"], self.refresh_key = resp["token_info"]["refresh_token"]
+            with open(os.path.join(os.path.realpath(os.path.dirname(__file__)), "..", "users.yaml"), "w", encoding="utf-8") as w:
+                yaml.round_trip_dump(users, w, allow_unicode=True, default_flow_style=False)
+                w.close()
+        else:
+            self.log.log("INFO", "令牌状态正常.")
         loginInfo = await self.api.loginVerift()
         self.mid, self.name = loginInfo['mid'], loginInfo['name']
         self.log = logger.bind(user=self.name)
@@ -49,7 +71,6 @@ class BiliUser:
             self.isLogin = False
             return False
         self.log.log("SUCCESS", str(loginInfo['mid']) + " 登录成功")
-
         self.isLogin = True
         return True
 
@@ -86,7 +107,7 @@ class BiliUser:
 
     async def asynclikeandShare(self, failedMedals: list = []):
         '''
-        点赞 *3 分享 * 5 
+        点赞 *3 分享 * 5
         '''
         if self.config['LIKE_CD'] == 0:
             self.log.log("INFO", "点赞任务已关闭")
