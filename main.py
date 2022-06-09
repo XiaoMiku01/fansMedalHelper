@@ -36,7 +36,6 @@ try:
             "SIGNINGROUP": users.get('SIGNINGROUP', 2),
             "PROXY": users.get('PROXY'),
         }
-        f.close()
 except Exception as e:
     log.error(f"读取配置文件失败,请检查配置文件格式是否正确: {e}")
     exit(1)
@@ -64,8 +63,8 @@ async def main():
     startTasks = []
     catchMsg = []
     for user in users['USERS']:
-        if user['access_key'] and user['refresh_key']:
-            biliUser = BiliUser(user['access_key'], user['refresh_key'], user.get('white_uid', ''), user.get('banned_uid', ''), config)
+        if user['access_key']:
+            biliUser = BiliUser(user['access_key'], user.get('white_uid', ''), user.get('banned_uid', ''), config)
             initTasks.append(biliUser.init())
             startTasks.append(biliUser.start())
             catchMsg.append(biliUser.sendmsg())
