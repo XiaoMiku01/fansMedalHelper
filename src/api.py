@@ -110,6 +110,7 @@ class BiliApiError(Exception):
 
 
 class BiliApi:
+    log = logger.bind(user="B站粉丝牌助手")
     headers = {
         "User-Agent": "Mozilla/5.0 BiliDroid/6.73.1 (bbcallen@gmail.com) os/android model/Mi 10 Pro mobi_app/android build/6731100 channel/xiaomi innerVer/6731110 osVer/12 network/2",
     }
@@ -250,6 +251,32 @@ class BiliApi:
             "ts": int(time.time()),
         }
         return await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
+    
+    async def checkToken(self):
+        """查询登录令牌有效期
+        """
+        url = "https://passport.bilibili.com/api/v2/oauth2/info"
+        payload = {
+            "access_token": self.u.access_key,
+            "actionKey": "appkey",
+            "appkey": Crypto.APPKEY,
+            "ts": int(time.time()),
+        }
+        # {'mid': 12345, 'access_token': '6789asd', 'expires_in': 98765}
+        return await self.__get(url, params=SingableDict(payload).signed, headers=self.headers)
+
+    async def refreshToken(self):
+        """刷新登录令牌的有效期
+        """
+        url = "https://passport.bilibili.com/api/v2/oauth2/refresh_token"
+        payload = {
+            "access_token": self.u.access_key,
+            "actionKey": "appkey",
+            "appkey": Crypto.APPKEY,
+            "refresh_token": self.u.refresh_key,
+            "ts": int(time.time()),
+        }
+        return await self.__post(url, data=SingableDict(payload).signed, headers=self.headers)
 
     async def doSign(self):
         '''
