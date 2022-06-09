@@ -57,8 +57,8 @@ class BiliUser:
                 f.close()
             for user in users["USERS"]:
                 if checkInfo["access_token"] == user["access_key"]:
-                    user["access_key"] = resp["token_info"]["access_token"]
-                    user["refresh_key"] = resp["token_info"]["refresh_token"]
+                    user["access_key"], self.access_key = resp["token_info"]["access_token"]
+                    user["refresh_key"], self.refresh_key = resp["token_info"]["refresh_token"]
             with open(os.path.join(os.path.realpath(os.path.dirname(__file__)), "..", "users.yaml"), "w", encoding="utf-8") as w:
                 yaml.round_trip_dump(users, w, allow_unicode=True, default_flow_style=False)
                 w.close()
