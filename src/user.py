@@ -94,34 +94,36 @@ class BiliUser:
             self.log.log("INFO", "分享任务已关闭")
         if self.config['LIKE_CD'] == 0 and self.config['SHARE_CD'] == 0:
             return
-        if not self.config['ASYNC']:
-            self.log.log("INFO", "同步点赞、分享任务开始....")
-            for index, medal in enumerate(self.medalsLower20):
-                tasks = []
-                tasks.append(self.api.likeInteract(medal['room_info']['room_id'])) if self.config['LIKE_CD'] else ...
-                tasks.append(self.api.shareRoom(medal['room_info']['room_id'])) if self.config['SHARE_CD'] else ...
-                await asyncio.gather(*tasks)
-                self.log.log(
-                    "SUCCESS", f"{medal['anchor_info']['nick_name']} 点赞,分享成功 {index+1}/{len(self.medalsLower20)}")
-                await asyncio.sleep(max(self.config['LIKE_CD'], self.config['SHARE_CD']))
-            return
         try:
-            self.log.log("INFO", "异步点赞、分享任务开始....")
-            allTasks = []
             if not failedMedals:
                 failedMedals = self.medalsLower20
-            for medal in failedMedals:
-                allTasks.append(self.api.likeInteract(medal['room_info']['room_id'])) if self.config['LIKE_CD'] else ...
-                allTasks.append(self.api.shareRoom(medal['room_info']['room_id'])) if self.config['SHARE_CD'] else ...
-            await asyncio.gather(*allTasks)
+            if not self.config['ASYNC']:
+                self.log.log("INFO", "同步点赞、分享任务开始....")
+                for index, medal in enumerate(failedMedals):
+                    tasks = []
+                    tasks.append(self.api.likeInteract(medal['room_info']
+                                                       ['room_id'])) if self.config['LIKE_CD'] else ...
+                    tasks.append(self.api.shareRoom(medal['room_info']['room_id'])) if self.config['SHARE_CD'] else ...
+                    await asyncio.gather(*tasks)
+                    self.log.log(
+                        "SUCCESS", f"{medal['anchor_info']['nick_name']} 点赞,分享成功 {index+1}/{len(self.medalsLower20)}")
+                    await asyncio.sleep(max(self.config['LIKE_CD'], self.config['SHARE_CD']))
+            else:
+                self.log.log("INFO", "异步点赞、分享任务开始....")
+                allTasks = []
+                for medal in failedMedals:
+                    allTasks.append(self.api.likeInteract(medal['room_info']
+                                                          ['room_id'])) if self.config['LIKE_CD'] else ...
+                    allTasks.append(self.api.shareRoom(medal['room_info']
+                                                       ['room_id'])) if self.config['SHARE_CD'] else ...
+                await asyncio.gather(*allTasks)
             await asyncio.sleep(10)
             await self.getMedals()  # 刷新勋章
             self.log.log("SUCCESS", "点赞、分享任务完成")
             finallyMedals = [medla for medla in self.medalsLower20 if medal['medal']['today_feed'] >= 1100]
-            midMedals = [medla for medla in self.medalsLower20 if medal['medal']['today_feed'] >= 1100]
             failedMedals = [medla for medla in self.medalsLower20 if medal['medal']['today_feed'] < 1100]
-            msg = "20级以下牌子共 {} 个,完成任务 {} 个亲密度大于1100, {} 个亲密度大于1200".format(
-                len(self.medalsLower20), len(midMedals), len(finallyMedals))
+            msg = "20级以下牌子共 {} 个,完成任务 {} 个亲密度大于等于1100".format(
+                len(self.medalsLower20), len(finallyMedals))
             self.log.log("INFO", msg)
             self.log.log("WARNING", "小于1100或失败房间: {}... {}个".format(
                 ' '.join([medals['anchor_info']['nick_name'] for medals in failedMedals[:5]]), len(failedMedals)))
@@ -133,11 +135,6 @@ class BiliUser:
                 self.retryTimes += 1
                 self.log.log("WARNING", "重试次数: {}/{}".format(self.retryTimes, self.maxRetryTimes))
                 await self.asynclikeandShare(failedMedals)
-            else:
-                pass
-                # self.message.append(f"【{self.name}】 " + msg)
-                # self.errmsg.append(f"【{self.name}】 " + "小于1100或失败房间: {}... {}个".format(
-                # ' '.join([medals['anchor_info']['nick_name'] for medals in failedMedals[:5]]), len(failedMedals)))
         except Exception as e:
             self.log.exception("点赞、分享任务异常")
             self.errmsg.append(f"【{self.name}】 点赞、分享任务异常,请检查日志")
