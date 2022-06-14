@@ -120,8 +120,8 @@ class BiliUser:
             await asyncio.sleep(10)
             await self.getMedals()  # 刷新勋章
             self.log.log("SUCCESS", "点赞、分享任务完成")
-            finallyMedals = [medla for medla in self.medalsLower20 if medal['medal']['today_feed'] >= 1100]
-            failedMedals = [medla for medla in self.medalsLower20 if medal['medal']['today_feed'] < 1100]
+            finallyMedals = [medal for medal in self.medalsLower20 if medal['medal']['today_feed'] >= 1100]
+            failedMedals = [medal for medal in self.medalsLower20 if medal['medal']['today_feed'] < 1100]
             msg = "20级以下牌子共 {} 个,完成任务 {} 个亲密度大于等于1100".format(
                 len(self.medalsLower20), len(finallyMedals))
             self.log.log("INFO", msg)
