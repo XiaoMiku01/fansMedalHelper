@@ -108,6 +108,7 @@ if __name__ == '__main__':
         schedulers.add_job(
             run,
             CronTrigger.from_crontab(cron),
+            misfire_grace_time=3600
         )
         schedulers.start()
     else:
