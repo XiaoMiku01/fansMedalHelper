@@ -1,4 +1,3 @@
-
 import asyncio
 from hashlib import md5
 import hashlib
@@ -13,8 +12,8 @@ from urllib.parse import urlencode, urlparse
 
 
 from aiohttp import ClientSession
-sys.path.append(os.path.dirname(
-    os.path.dirname(os.path.abspath(__file__))))
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 class Crypto:
@@ -84,7 +83,9 @@ def retry(tries=3, interval=1):
                         pass
                         # log.success(f"重试成功")
                     return result
+
         return wrapper
+
     return decorate
 
 
@@ -96,8 +97,7 @@ def client_sign(data: dict):
 
 
 def randomString(length: int = 16) -> str:
-    return ''.join(random.sample(
-        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', length))
+    return ''.join(random.sample('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', length))
 
 
 class BiliApiError(Exception):
@@ -135,9 +135,9 @@ class BiliApi:
             return self.__check_response(await resp.json())
 
     async def getFansMedalandRoomID(self) -> dict:
-        '''
+        """
         获取用户粉丝勋章和直播间ID
-        '''
+        """
         url = "https://api.live.bilibili.com/xlive/app-ucenter/v1/fansMedal/panel"
         params = {
             "access_key": self.u.access_key,
@@ -162,9 +162,9 @@ class BiliApi:
             params['page'] += 1
 
     async def likeInteract(self, room_id: int):
-        '''
+        """
         点赞直播间
-        '''
+        """
         url = "https://api.live.bilibili.com/xlive/web-ucenter/v1/interact/likeInteract"
         data = {
             "access_key": self.u.access_key,
@@ -173,16 +173,22 @@ class BiliApi:
             "ts": int(time.time()),
             "roomid": room_id,
         }
-        for _ in range(3):
-            await self.__post(url, data=SingableDict(data).signed, headers=self.headers.update({
-                "Content-Type": "application/x-www-form-urlencoded",
-            }))
-            await asyncio.sleep(self.u.config['LIKE_CD'] if not self.u.config['ASYNC'] else 2)
+        # for _ in range(3):
+        await self.__post(
+            url,
+            data=SingableDict(data).signed,
+            headers=self.headers.update(
+                {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                }
+            ),
+        )
+        # await asyncio.sleep(self.u.config['LIKE_CD'] if not self.u.config['ASYNC'] else 2)
 
     async def shareRoom(self, room_id: int):
-        '''
+        """
         分享直播间
-        '''
+        """
         url = "https://api.live.bilibili.com/xlive/app-room/v1/index/TrigerInteract"
         data = {
             "access_key": self.u.access_key,
@@ -192,16 +198,22 @@ class BiliApi:
             "interact_type": 3,
             "roomid": room_id,
         }
-        for _ in range(5):
-            await self.__post(url, data=SingableDict(data).signed, headers=self.headers.update({
-                "Content-Type": "application/x-www-form-urlencoded",
-            }))
-            await asyncio.sleep(self.u.config['SHARE_CD'] if not self.u.config['ASYNC'] else 5)
+        # for _ in range(5):
+        await self.__post(
+            url,
+            data=SingableDict(data).signed,
+            headers=self.headers.update(
+                {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                }
+            ),
+        )
+            # await asyncio.sleep(self.u.config['SHARE_CD'] if not self.u.config['ASYNC'] else 5)
 
     async def sendDanmaku(self, room_id: int) -> str:
-        '''
+        """
         发送弹幕
-        '''
+        """
         url = "https://api.live.bilibili.com/xlive/app-room/v1/dM/sendmsg"
         danmakus = [
             "(⌒▽⌒).",
@@ -233,15 +245,22 @@ class BiliApi:
             "color": "16777215",
             "fontsize": "25",
         }
-        resp = await self.__post(url, params=SingableDict(params).signed, data=data, headers=self.headers.update({
-            "Content-Type": "application/x-www-form-urlencoded",
-        }))
+        resp = await self.__post(
+            url,
+            params=SingableDict(params).signed,
+            data=data,
+            headers=self.headers.update(
+                {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                }
+            ),
+        )
         return json.loads(resp['mode_info']['extra'])['content']
 
     async def loginVerift(self):
-        '''
+        """
         登录验证
-        '''
+        """
         url = "https://app.bilibili.com/x/v2/account/mine"
         params = {
             "access_key": self.u.access_key,
@@ -252,9 +271,9 @@ class BiliApi:
         return await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
 
     async def doSign(self):
-        '''
+        """
         直播区签到
-        '''
+        """
         url = "https://api.live.bilibili.com/rc/v1/Sign/doSign"
         params = {
             "access_key": self.u.access_key,
@@ -265,9 +284,9 @@ class BiliApi:
         return await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
 
     async def getUserInfo(self):
-        '''
+        """
         用户直播等级
-        '''
+        """
         url = "https://api.live.bilibili.com/xlive/app-ucenter/v1/user/get_user_info"
         params = {
             "access_key": self.u.access_key,
@@ -335,23 +354,31 @@ class BiliApi:
             'click_id': self.u.uuids[1],
             'session_id': '',
             'player_type': '0',
-            'client_ts': f'{int(time.time())}'
+            'client_ts': f'{int(time.time())}',
         }
         data.update(
-            {'client_sign': client_sign(data),
-             "access_key": self.u.access_key,
-             "actionKey": "appkey",
-             "appkey": Crypto.APPKEY,
-             "ts": int(time.time()), }
+            {
+                'client_sign': client_sign(data),
+                "access_key": self.u.access_key,
+                "actionKey": "appkey",
+                "appkey": Crypto.APPKEY,
+                "ts": int(time.time()),
+            }
         )
-        return await self.__post(url, data=SingableDict(data).signed, headers=self.headers.update({
-            "Content-Type": "application/x-www-form-urlencoded",
-        }))
+        return await self.__post(
+            url,
+            data=SingableDict(data).signed,
+            headers=self.headers.update(
+                {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                }
+            ),
+        )
 
     async def wearMedal(self, medal_id: int):
-        '''
+        """
         佩戴粉丝牌
-        '''
+        """
         url = "https://api.live.bilibili.com/xlive/app-ucenter/v1/fansMedal/wear"
         data = {
             "access_key": self.u.access_key,
@@ -363,9 +390,15 @@ class BiliApi:
             "type": "1",
             "version": "0",
         }
-        return await self.__post(url, data=SingableDict(data).signed, headers=self.headers.update({
-            "Content-Type": "application/x-www-form-urlencoded",
-        }))
+        return await self.__post(
+            url,
+            data=SingableDict(data).signed,
+            headers=self.headers.update(
+                {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                }
+            ),
+        )
 
     async def getGroups(self):
         url = "https://api.live.bilibili.com/link_group/v1/member/my_groups"
@@ -373,7 +406,7 @@ class BiliApi:
             "access_key": self.u.access_key,
             "actionKey": "appkey",
             "appkey": Crypto.APPKEY,
-            "ts": int(time.time())
+            "ts": int(time.time()),
         }
         list = (await self.__get(url, params=SingableDict(params).signed, headers=self.headers))['list']
         for group in list:

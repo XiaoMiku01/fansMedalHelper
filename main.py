@@ -1,4 +1,3 @@
-
 import os
 from loguru import logger
 import warnings
@@ -9,8 +8,9 @@ import itertools
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 from src import BiliUser
+
 log = logger.bind(user="B站粉丝牌助手")
-__VERSION__ = "0.3.4"
+__VERSION__ = "0.3.5"
 
 warnings.filterwarnings(
     "ignore",
@@ -47,7 +47,9 @@ async def main():
     session = aiohttp.ClientSession()
     try:
         log.warning("当前版本为: " + __VERSION__)
-        resp = await (await session.get("http://version.fansmedalhelper.1961584514352337.cn-hangzhou.fc.devsapp.net/")).json()
+        resp = await (
+            await session.get("http://version.fansmedalhelper.1961584514352337.cn-hangzhou.fc.devsapp.net/")
+        ).json()
         if resp['version'] != __VERSION__:
             log.warning("新版本为: " + resp['version'] + ",请更新")
             log.warning("更新内容: " + resp['changelog'])
@@ -64,7 +66,9 @@ async def main():
     catchMsg = []
     for user in users['USERS']:
         if user['access_key']:
-            biliUser = BiliUser(user['access_key'], user.get('white_uid', ''), user.get('banned_uid', ''), config)
+            biliUser = BiliUser(
+                user['access_key'], user.get('white_uid', ''), user.get('banned_uid', ''), config
+            )
             initTasks.append(biliUser.init())
             startTasks.append(biliUser.start())
             catchMsg.append(biliUser.sendmsg())
@@ -81,9 +85,16 @@ async def main():
     await session.close()
     if users.get('MOREPUSH', ''):
         from onepush import notify
+
         notifier = users['MOREPUSH']['notifier']
         params = users['MOREPUSH']['params']
-        await notify(notifier, title=f"【B站粉丝牌助手推送】", content="  \n".join(messageList), **params, proxy=config.get('PROXY'))
+        await notify(
+            notifier,
+            title=f"【B站粉丝牌助手推送】",
+            content="  \n".join(messageList),
+            **params,
+            proxy=config.get('PROXY'),
+        )
         log.info(f"{notifier} 已推送")
 
 
@@ -105,11 +116,7 @@ if __name__ == '__main__':
     if cron:
         log.info('使用内置定时器,开启定时任务,等待时间到达后执行')
         schedulers = BlockingScheduler()
-        schedulers.add_job(
-            run,
-            CronTrigger.from_crontab(cron),
-            misfire_grace_time=3600
-        )
+        schedulers.add_job(run, CronTrigger.from_crontab(cron), misfire_grace_time=3600)
         schedulers.start()
     else:
         log.info('外部调用,开启任务')
