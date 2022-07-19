@@ -233,9 +233,10 @@ class BiliUser:
 
     async def watchinglive(self):
         if not self.config['WATCHINGLIVE']:
-            self.log.log("INFO", "每日65分钟任务关闭")
+            self.log.log("INFO", "每日观看不直播任务关闭")
             return
-        self.log.log("INFO", "每日65分钟任务开始")
+        HEART_MAX = self.config['WATCHINGLIVE']
+        self.log.log("INFO", f"每日{HEART_MAX}分钟任务开始")
         heartNum = 0
         while True:
             tasks = []
@@ -245,12 +246,12 @@ class BiliUser:
             heartNum += 1
             self.log.log(
                 "INFO",
-                f"{' '.join([medal['anchor_info']['nick_name'] for medal in self.medalsLower20[:5]])} 等共 {len(self.medalsLower20)} 个房间的第{heartNum}次心跳包已发送（{heartNum}/{65}）",
+                f"{' '.join([medal['anchor_info']['nick_name'] for medal in self.medalsLower20[:5]])} 等共 {len(self.medalsLower20)} 个房间的第{heartNum}次心跳包已发送（{heartNum}/{HEART_MAX}）",
             )
             await asyncio.sleep(60)
-            if heartNum >= 66:
+            if heartNum >= HEART_MAX:
                 break
-        self.log.log("SUCCESS", "每日65分钟任务完成")
+        self.log.log("SUCCESS", f"每日{HEART_MAX}分钟任务开始")
 
     async def signInGroups(self):
         if not self.config['SIGNINGROUP']:

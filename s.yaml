@@ -1,0 +1,40 @@
+edition: 1.0.0
+name: fans-medal-helper
+
+access: "default"
+
+vars:
+    region: "cn-hangzhou"
+    service:
+        name: "fans-medal-helper-service"
+        description: "B站粉丝牌助手"
+
+services:
+    helloworld:
+        component: fc
+        actions:
+            pre-deploy:
+                - run: pip3 install -r requirements.txt -t .
+                  path: ./code
+                - run: git clone https://github.com/XiaoMiku01/fansMedalHelper.git
+                  path: ./code
+                - run: cd fansMedalHelper && cp -r * .. && cd ..
+                  path: ./code
+        props:
+            region: ${vars.region}
+            service: ${vars.service}
+            function:
+                name: "fans-medal-helper-function"
+                description: "B站粉丝牌助手"
+                runtime: python3.9
+                codeUri: ./code
+                handler: main.run
+                memorySize: 128
+                timeout: 86400
+            triggers:
+                - name: timer
+                  type: timer
+                  config:
+                      payload: ""
+                      cronExpression: "1 0 * * *"
+                      enable: true

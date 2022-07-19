@@ -1,12 +1,10 @@
+import json
 import os
 from loguru import logger
 import warnings
 import asyncio
 import aiohttp
-import yaml
 import itertools
-from apscheduler.schedulers.blocking import BlockingScheduler
-from apscheduler.triggers.cron import CronTrigger
 from src import BiliUser
 
 log = logger.bind(user="B站粉丝牌助手")
@@ -18,24 +16,27 @@ warnings.filterwarnings(
 )
 os.chdir(os.path.dirname(os.path.abspath(__file__)).split(__file__)[0])
 try:
-    with open('users.yaml', 'r', encoding='utf-8') as f:
-        users = yaml.load(f, Loader=yaml.FullLoader)
-        assert users['ASYNC'] in [0, 1], "ASYNC参数错误"
-        assert users['LIKE_CD'] >= 0, "LIKE_CD参数错误"
-        assert users['SHARE_CD'] >= 0, "SHARE_CD参数错误"
-        assert users['DANMAKU_CD'] >= 0, "DANMAKU_CD参数错误"
-        assert users['WATCHINGLIVE'] in [0, 1], "WATCHINGLIVE参数错误"
-        assert users['WEARMEDAL'] in [0, 1], "WEARMEDAL参数错误"
-        config = {
-            "ASYNC": users['ASYNC'],
-            "LIKE_CD": users['LIKE_CD'],
-            "SHARE_CD": users['SHARE_CD'],
-            "DANMAKU_CD": users['DANMAKU_CD'],
-            "WATCHINGLIVE": users['WATCHINGLIVE'],
-            "WEARMEDAL": users['WEARMEDAL'],
-            "SIGNINGROUP": users.get('SIGNINGROUP', 2),
-            "PROXY": users.get('PROXY'),
-        }
+    if os.environ.get("USERS"):
+        users = json.loads(os.environ.get("USERS"))
+    else:
+        with open('users.yaml', 'r', encoding='utf-8') as f:
+            users = yaml.load(f, Loader=yaml.FullLoader)
+    assert users['ASYNC'] in [0, 1], "ASYNC参数错误"
+    assert users['LIKE_CD'] >= 0, "LIKE_CD参数错误"
+    assert users['SHARE_CD'] >= 0, "SHARE_CD参数错误"
+    assert users['DANMAKU_CD'] >= 0, "DANMAKU_CD参数错误"
+    assert users['WATCHINGLIVE'] >= 0, "WATCHINGLIVE参数错误"
+    assert users['WEARMEDAL'] in [0, 1], "WEARMEDAL参数错误"
+    config = {
+        "ASYNC": users['ASYNC'],
+        "LIKE_CD": users['LIKE_CD'],
+        "SHARE_CD": users['SHARE_CD'],
+        "DANMAKU_CD": users['DANMAKU_CD'],
+        "WATCHINGLIVE": users['WATCHINGLIVE'],
+        "WEARMEDAL": users['WEARMEDAL'],
+        "SIGNINGROUP": users.get('SIGNINGROUP', 2),
+        "PROXY": users.get('PROXY'),
+    }
 except Exception as e:
     log.error(f"读取配置文件失败,请检查配置文件格式是否正确: {e}")
     exit(1)
@@ -112,6 +113,9 @@ async def push_message(session, sendkey, message):
 
 
 if __name__ == '__main__':
+    import yaml
+    from apscheduler.schedulers.blocking import BlockingScheduler
+    from apscheduler.triggers.cron import CronTrigger
     cron = users.get('CRON', None)
     if cron:
         log.info('使用内置定时器,开启定时任务,等待时间到达后执行')
