@@ -19,6 +19,8 @@ try:
     if os.environ.get("USERS"):
         users = json.loads(os.environ.get("USERS"))
     else:
+        import yaml
+
         with open('users.yaml', 'r', encoding='utf-8') as f:
             users = yaml.load(f, Loader=yaml.FullLoader)
     assert users['ASYNC'] in [0, 1], "ASYNC参数错误"
@@ -113,9 +115,9 @@ async def push_message(session, sendkey, message):
 
 
 if __name__ == '__main__':
-    import yaml
     from apscheduler.schedulers.blocking import BlockingScheduler
     from apscheduler.triggers.cron import CronTrigger
+
     cron = users.get('CRON', None)
     if cron:
         log.info('使用内置定时器,开启定时任务,等待时间到达后执行')
