@@ -31,6 +31,8 @@ services:
                 handler: main.run
                 memorySize: 128
                 timeout: 86400
+                environmentVariables:
+                    USERS: ${env(USERS)}
             triggers:
                 - name: timer
                   type: timer
