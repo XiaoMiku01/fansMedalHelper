@@ -10,7 +10,7 @@ vars:
         description: "B站粉丝牌助手"
         logConfig: auto
 services:
-    helloworld:
+    fansmedalhelper:
         component: fc
         actions:
             pre-deploy:
