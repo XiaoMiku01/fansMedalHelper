@@ -78,10 +78,12 @@ async def main():
     try:
         await asyncio.gather(*initTasks)
         await asyncio.gather(*startTasks)
-        messageList = messageList + list(itertools.chain.from_iterable(await asyncio.gather(*catchMsg)))
     except Exception as e:
         log.exception(e)
+        # messageList = messageList + list(itertools.chain.from_iterable(await asyncio.gather(*catchMsg)))
         messageList.append(f"任务执行失败: {e}")
+    finally:
+        messageList = messageList + list(itertools.chain.from_iterable(await asyncio.gather(*catchMsg)))
     [log.info(message) for message in messageList]
     if users.get('SENDKEY', ''):
         await push_message(session, users['SENDKEY'], "  \n".join(messageList))

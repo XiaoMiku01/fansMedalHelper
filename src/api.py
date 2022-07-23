@@ -208,7 +208,7 @@ class BiliApi:
                 }
             ),
         )
-            # await asyncio.sleep(self.u.config['SHARE_CD'] if not self.u.config['ASYNC'] else 5)
+        # await asyncio.sleep(self.u.config['SHARE_CD'] if not self.u.config['ASYNC'] else 5)
 
     async def sendDanmaku(self, room_id: int) -> str:
         """
@@ -293,6 +293,20 @@ class BiliApi:
             "actionKey": "appkey",
             "appkey": Crypto.APPKEY,
             "ts": int(time.time()),
+        }
+        return await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
+
+    async def getMedalsInfoByUid(self, uid: int):
+        """
+        用户勋章信息
+        """
+        url = "https://api.live.bilibili.com/xlive/app-ucenter/v1/fansMedal/fans_medal_info"
+        params = {
+            "access_key": self.u.access_key,
+            "actionKey": "appkey",
+            "appkey": Crypto.APPKEY,
+            "ts": int(time.time()),
+            "target_id": uid,
         }
         return await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
 
