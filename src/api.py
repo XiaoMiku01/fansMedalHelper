@@ -120,7 +120,7 @@ class BiliApi:
         self.session = s
 
     def __check_response(self, resp: dict) -> dict:
-        if resp['code'] != 0:
+        if resp['code'] != 0 or ('mode_info' in resp['data'] and resp['message'] != ''):
             raise BiliApiError(resp['code'], resp['message'])
         return resp['data']
 
@@ -245,16 +245,39 @@ class BiliApi:
             "color": "16777215",
             "fontsize": "25",
         }
-        resp = await self.__post(
-            url,
-            params=SingableDict(params).signed,
-            data=data,
-            headers=self.headers.update(
-                {
-                    "Content-Type": "application/x-www-form-urlencoded",
+        try:
+            resp = await self.__post(
+                url,
+                params=SingableDict(params).signed,
+                data=data,
+                headers=self.headers.update(
+                    {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    }
+                ),
+            )
+        except BiliApiError as e:
+            if e.code == 0:
+                await asyncio.sleep(self.u.config['DANMAKU_CD'])
+                data = {
+                    "cid": room_id,
+                    "msg": "打卡",
+                    "rnd": int(time.time()),
+                    "color": "16777215",
+                    "fontsize": "25",
                 }
-            ),
-        )
+                resp = await self.__post(
+                    url,
+                    params=SingableDict(params).signed,
+                    data=data,
+                    headers=self.headers.update(
+                        {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        }
+                    ),
+                )
+                return json.loads(resp['mode_info']['extra'])['content']
+            raise e
         return json.loads(resp['mode_info']['extra'])['content']
 
     async def loginVerift(self):
