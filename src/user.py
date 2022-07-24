@@ -241,10 +241,11 @@ class BiliUser:
                 )
                 if initialMedal['level'] < 20 and initialMedal['today_feed'] != 0:
                     need = initialMedal['next_intimacy'] - initialMedal['intimacy']
-                    need_days = need // initialMedal['today_feed'] + 1
+                    need_days = need // 1500 + 1
                     end_date = datetime.now() + timedelta(days=need_days)
+                    self.message.append(f"今日已获取亲密度 {initialMedal['today_feed']} (B站结算有延迟，请耐心等待)")
                     self.message.append(
-                        f"距离下一级还需 {need} 亲密度 预计需要 {need_days} 天 ({end_date.strftime('%Y-%m-%d')})"
+                        f"距离下一级还需 {need} 亲密度 预计需要 {need_days} 天 ({end_date.strftime('%Y-%m-%d')},以每日 1500 亲密度计算)"
                     )
         await self.session.close()
         return self.message + self.errmsg + ['---']
