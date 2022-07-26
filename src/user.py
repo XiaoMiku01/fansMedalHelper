@@ -270,7 +270,7 @@ class BiliUser:
             await asyncio.sleep(60)
             if heartNum >= HEART_MAX:
                 break
-        self.log.log("SUCCESS", f"每日{HEART_MAX}分钟任务开始")
+        self.log.log("SUCCESS", f"每日{HEART_MAX}分钟任务完成")
 
     async def signInGroups(self):
         if not self.config['SIGNINGROUP']:
