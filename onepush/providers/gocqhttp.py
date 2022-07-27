@@ -23,7 +23,7 @@ class Gocqhttp(Provider):
         super().__init__()
         self.method = 'get'
 
-    async def _prepare_url(self, endpoint: str, path: str = None, **kwargs):
+    def _prepare_url(self, endpoint: str, path: str = None, **kwargs):
         if endpoint and '//' not in endpoint:
             endpoint = f'http://{endpoint}'
         if not path:
@@ -32,15 +32,15 @@ class Gocqhttp(Provider):
         self.url = f'{endpoint}{path}'
         return self.url
 
-    async def _prepare_data(self,
-                            title: str = None,
-                            content: str = None,
-                            token: str = None,
-                            message_type: str = None,
-                            user_id: int = None,
-                            group_id: int = None,
-                            auto_escape: bool = False,
-                            **kwargs):
+    def _prepare_data(self,
+                      title: str = None,
+                      content: str = None,
+                      token: str = None,
+                      message_type: str = None,
+                      user_id: int = None,
+                      group_id: int = None,
+                      auto_escape: bool = False,
+                      **kwargs):
         message = self.process_message(title, content)
         self.data = {
             'access_token': token,
@@ -51,3 +51,4 @@ class Gocqhttp(Provider):
             'auto_escape': auto_escape
         }
         return self.data
+

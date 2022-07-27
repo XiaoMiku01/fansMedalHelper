@@ -93,7 +93,7 @@ async def main():
 
         notifier = users['MOREPUSH']['notifier']
         params = users['MOREPUSH']['params']
-        await notify(
+        notify(
             notifier,
             title=f"【B站粉丝牌助手推送】",
             content="  \n".join(messageList),

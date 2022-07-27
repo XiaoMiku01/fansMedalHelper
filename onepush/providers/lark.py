@@ -8,17 +8,20 @@ import time
 
 class Lark(Provider):
     name = 'lark'
-
+    _params = {
+        'required': ['webhook', 'content'],
+        'optional': ['keyword', 'sign']
+    }
     def gen_sign(self, timestamp, secret):
         string_to_sign = '{}\n{}'.format(timestamp, secret)
         hmac_code = hmac.new(string_to_sign.encode("utf-8"), digestmod=hashlib.sha256).digest()
         sign = base64.b64encode(hmac_code).decode('utf-8')
         return sign
 
-    async def _prepare_url(self, webhook: str, **kwargs):
+    def _prepare_url(self, webhook: str, **kwargs):
         self.url = webhook
 
-    async def _prepare_data(self, keyword: str, sign: str, content: str, **kwargs):
+    def _prepare_data(self, keyword: str, sign: str, content: str, **kwargs):
         self.data = {
             "msg_type": "text",
             "content":
@@ -34,5 +37,5 @@ class Lark(Provider):
             })
         return self.data
 
-    async def _send_message(self):
-        return await self.request('post', self.url, json=self.data)
+    def _send_message(self):
+        return self.request('post', self.url, json=self.data)

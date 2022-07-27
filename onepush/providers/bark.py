@@ -20,13 +20,13 @@ class Bark(Provider):
         ]
     }
 
-    async def _prepare_url(self, key: str, **kwargs):
+    def _prepare_url(self, key: str, **kwargs):
         self.url = key
-        if 'https' not in key or 'http' not in key:
+        if 'https' not in key and 'http' not in key:
             self.url = self.base_url.format(key)
         return self.url
 
-    async def _prepare_data(self,
+    def _prepare_data(self,
                       title: str = None,
                       content: str = None,
                       sound: str = 'healthnotification',

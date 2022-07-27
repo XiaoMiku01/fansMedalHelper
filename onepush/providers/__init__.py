@@ -10,6 +10,7 @@ from . import gocqhttp
 from . import dingtalk
 from . import discord
 from . import pushplus
+from . import pushdeer
 from . import qmsg
 from . import serverchan
 from . import serverchanturbo
@@ -25,6 +26,7 @@ _all_providers = {
     dingtalk.DingTalk.name: dingtalk.DingTalk,
     discord.Discord.name: discord.Discord,
     pushplus.PushPlus.name: pushplus.PushPlus,
+    pushdeer.PushDeer.name: pushdeer.PushDeer,
     qmsg.Qmsg.name: qmsg.Qmsg,
     serverchan.ServerChan.name: serverchan.ServerChan,
     serverchanturbo.ServerChanTurbo.name: serverchanturbo.ServerChanTurbo,
