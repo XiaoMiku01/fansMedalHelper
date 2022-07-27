@@ -1,4 +1,5 @@
-aiohttp 
-loguru 
-pyyaml 
+aiohttp
+loguru
+pyyaml
 apscheduler
+requests
