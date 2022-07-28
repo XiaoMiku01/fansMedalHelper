@@ -48,7 +48,9 @@
 -   此脚本的 Go 语言实现版本 [ThreeCatsLoveFish/MedalHelper](https://github.com/ThreeCatsLoveFish/MedalHelper)
 -   AW 的 B 站挂机助手 [andywang425/BLTH](https://github.com/andywang425/BLTH)
 
----
+---  
+
+###  本项目暂不接受任何 PR 如有问题或者新想法、功能可以通过 Issues 告诉我
 
 ### 赞助
 
