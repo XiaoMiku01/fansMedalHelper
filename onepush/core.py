@@ -9,7 +9,7 @@ from loguru import logger
 
 # import requests
 from aiohttp import ClientSSLError, ClientSession, TCPConnector
-from aiohttp_socks import ProxyConnector
+
 
 # from requests.exceptions import SSLError
 
@@ -68,6 +68,8 @@ class Provider(object):
 
     # @staticmethod
     async def request(self, method, url: str, **kwargs):
+        if self.proxy:
+            from aiohttp_socks import ProxyConnector
         # session = requests.Session()
         # session = (
         #     ClientSession() if not self.proxy else ClientSession(connector=TCPConnector(verify_ssl=False))
