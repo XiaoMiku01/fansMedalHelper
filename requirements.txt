@@ -1,4 +1,5 @@
 aiohttp 
+aiohttp_socks
 loguru 
 pyyaml 
 apscheduler
