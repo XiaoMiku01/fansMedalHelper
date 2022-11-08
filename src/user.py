@@ -202,8 +202,8 @@ class BiliUser:
 
     async def start(self):
         if self.isLogin:
-            task = [self.asynclikeandShare(), self.sendDanmaku(), self.watchinglive(), self.signInGroups()]
-            await asyncio.wait(task)
+            tasks = [self.asynclikeandShare(), self.sendDanmaku(), self.watchinglive(), self.signInGroups()]
+            await asyncio.gather(*tasks)
         # await self.session.close()
 
     async def sendmsg(self):
@@ -261,7 +261,7 @@ class BiliUser:
             tasks = []
             for medal in self.medalsLower20:
                 tasks.append(self.api.heartbeat(medal['room_info']['room_id'], medal['medal']['target_id']))
-            await asyncio.wait(tasks)
+            await asyncio.gather(*tasks)
             heartNum += 1
             self.log.log(
                 "INFO",
