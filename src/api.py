@@ -259,13 +259,16 @@ class BiliApi:
         except BiliApiError as e:
             if e.code == 0:
                 await asyncio.sleep(self.u.config['DANMAKU_CD'])
-                data = {
-                    "cid": room_id,
-                    "msg": "打卡",
-                    "rnd": int(time.time()),
-                    "color": "16777215",
-                    "fontsize": "25",
-                }
+                params.update(
+                    {
+                        "ts": int(time.time()),
+                    }
+                )
+                data.update(
+                    {
+                        "msg": "111",
+                    }
+                )
                 resp = await self.__post(
                     url,
                     params=SingableDict(params).signed,
@@ -460,3 +463,13 @@ class BiliApi:
             "owner_id": owner_id,
         }
         return await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
+
+    async def getOneBattery(self):
+        url = "https://api.live.bilibili.com/xlive/app-ucenter/v1/userTask/UserTaskReceiveRewards"
+        data = {
+            "access_key": self.u.access_key,
+            "actionKey": "appkey",
+            "appkey": Crypto.APPKEY,
+            "ts": int(time.time()),
+        }
+        return await self.__post(url, data=SingableDict(data).signed, headers=self.headers)
