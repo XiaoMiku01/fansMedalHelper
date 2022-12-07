@@ -31,7 +31,7 @@ class BiliUser:
             raise ValueError("白名单或黑名单格式错误")
         self.config = config
         self.medals = []  # 用户所有勋章
-        self.medalsLower20 = []  # 用户所有勋章，等级小于20的
+        self.medalsNeedDo = []  # 用户所有勋章，等级小于20的 未满1500的
 
         self.session = ClientSession(timeout=ClientTimeout(total=3))
         self.api = BiliApi(self, self.session)
@@ -82,7 +82,7 @@ class BiliUser:
         获取用户勋章
         """
         self.medals.clear()
-        self.medalsLower20.clear()
+        self.medalsNeedDo.clear()
         async for medal in self.api.getFansMedalandRoomID():
             if self.whiteList == [0]:
                 if medal['medal']['target_id'] in self.bannedList:
@@ -93,7 +93,11 @@ class BiliUser:
                 if medal['medal']['target_id'] in self.whiteList:
                     self.medals.append(medal) if medal['room_info']['room_id'] != 0 else ...
                     self.log.success(f"{medal['anchor_info']['nick_name']} 在白名单中，加入任务")
-        [self.medalsLower20.append(medal) for medal in self.medals if medal['medal']['level'] < 20]
+        [
+            self.medalsNeedDo.append(medal)
+            for medal in self.medals
+            if medal['medal']['level'] < 20 and medal['medal']['today_feed'] < 1500
+        ]
 
     async def asynclikeandShare(self, failedMedals: list = []):
         """
@@ -107,7 +111,7 @@ class BiliUser:
             return
         try:
             if not failedMedals:
-                failedMedals = self.medalsLower20
+                failedMedals = self.medalsNeedDo
             if not self.config['ASYNC']:
                 self.log.log("INFO", "同步点赞、分享任务开始....")
                 for index, medal in enumerate(failedMedals):
@@ -121,7 +125,7 @@ class BiliUser:
                     await asyncio.gather(*tasks)
                     self.log.log(
                         "SUCCESS",
-                        f"{medal['anchor_info']['nick_name']} 点赞,分享成功 {index+1}/{len(self.medalsLower20)}",
+                        f"{medal['anchor_info']['nick_name']} 点赞,分享成功 {index+1}/{len(self.medalsNeedDo)}",
                     )
                     await asyncio.sleep(max(self.config['LIKE_CD'], self.config['SHARE_CD']))
             else:
@@ -138,9 +142,9 @@ class BiliUser:
             await asyncio.sleep(10)
             await self.getMedals()  # 刷新勋章
             self.log.log("SUCCESS", "点赞、分享任务完成")
-            finallyMedals = [medal for medal in self.medalsLower20 if medal['medal']['today_feed'] >= 200]
-            failedMedals = [medal for medal in self.medalsLower20 if medal['medal']['today_feed'] < 200]
-            msg = "20级以下牌子共 {} 个,完成任务 {} 个亲密度大于等于200".format(len(self.medalsLower20), len(finallyMedals))
+            finallyMedals = [medal for medal in self.medalsNeedDo if medal['medal']['today_feed'] >= 200]
+            failedMedals = [medal for medal in self.medalsNeedDo if medal['medal']['today_feed'] < 200]
+            msg = "20级以下牌子共 {} 个,完成任务 {} 个亲密度大于等于200".format(len(self.medalsNeedDo), len(finallyMedals))
             self.log.log("INFO", msg)
             self.log.log(
                 "WARNING",
@@ -152,7 +156,7 @@ class BiliUser:
             if self.retryTimes > self.maxRetryTimes:
                 self.log.log("ERROR", "任务重试次数过多,停止任务")
                 return
-            if len(finallyMedals) / len(self.medalsLower20) <= 0.9:
+            if len(finallyMedals) / len(self.medalsNeedDo) <= 0.9:
                 self.log.log("WARNING", "成功率过低,重新执行任务")
                 self.retryTimes += 1
                 self.log.log("WARNING", "重试次数: {}/{}".format(self.retryTimes, self.maxRetryTimes))
@@ -160,6 +164,43 @@ class BiliUser:
         except Exception as e:
             self.log.exception("点赞、分享任务异常")
             self.errmsg.append(f"【{self.name}】 点赞、分享任务异常,请检查日志")
+
+    async def like_v3(self, failedMedals: list = []):
+        if self.config['LIKE_CD'] == 0:
+            self.log.log("INFO", "点赞任务已关闭")
+            return
+        try:
+            if not failedMedals:
+                failedMedals = self.medalsNeedDo
+            if not self.config['ASYNC']:
+                self.log.log("INFO", "同步点赞任务开始....")
+                for index, medal in enumerate(failedMedals):
+                    tasks = []
+                    tasks.append(
+                        self.api.likeInteractV3(medal['room_info']['room_id'], medal['medal']['target_id'])
+                    ) if self.config['LIKE_CD'] else ...
+                    await asyncio.gather(*tasks)
+                    self.log.log(
+                        "SUCCESS",
+                        f"{medal['anchor_info']['nick_name']} 点赞成功 {index+1}/{len(self.medalsNeedDo)}",
+                    )
+                    await asyncio.sleep(self.config['LIKE_CD'])
+            else:
+                self.log.log("INFO", "异步点赞任务开始....")
+                allTasks = []
+                for medal in failedMedals:
+                    allTasks.append(
+                        self.api.likeInteractV3(medal['room_info']['room_id'], medal['medal']['target_id'])
+                    ) if self.config['LIKE_CD'] else ...
+                await asyncio.gather(*allTasks)
+            await asyncio.sleep(10)
+            self.log.log("SUCCESS", "点赞任务完成")
+            finallyMedals = [medal for medal in self.medalsNeedDo if medal['medal']['today_feed'] >= 100]
+            msg = "20级以下牌子共 {} 个,完成点赞任务 {} 个".format(len(self.medalsNeedDo), len(finallyMedals))
+            self.log.log("INFO", msg)
+        except Exception as e:
+            self.log.exception("点赞任务异常")
+            self.errmsg.append(f"【{self.name}】 点赞任务异常,请检查日志")
 
     async def sendDanmaku(self):
         """
@@ -201,8 +242,8 @@ class BiliUser:
 
     async def init(self):
         if not await self.loginVerify():
-            self.log.log("ERROR", "登录失败")
-            self.errmsg.append("登录失败")
+            self.log.log("ERROR", "登录失败 可能是 access_key 过期 , 请重新获取")
+            self.errmsg.append("登录失败 可能是 access_key 过期 , 请重新获取")
             await self.session.close()
         else:
             await self.doSign()
@@ -210,7 +251,15 @@ class BiliUser:
 
     async def start(self):
         if self.isLogin:
-            tasks = [self.asynclikeandShare(), self.sendDanmaku(), self.watchinglive(), self.signInGroups()]
+            tasks = []
+            if self.medalsNeedDo:
+                self.log.log("INFO", f"共有 {len(self.medalsNeedDo)} 个牌子未满 1500 亲密度")
+                tasks.append(self.like_v3())
+                tasks.append(self.watchinglive())
+            else:
+                self.log.log("INFO", "所有牌子已满 1500 亲密度")
+            tasks.append(self.sendDanmaku())
+            tasks.append(self.signInGroups())
             await asyncio.gather(*tasks)
         # await self.session.close()
 
@@ -220,7 +269,7 @@ class BiliUser:
             return self.message + self.errmsg
         await self.getMedals()
         nameList1, nameList2, nameList3, nameList4 = [], [], [], []
-        for medal in self.medalsLower20:
+        for medal in self.medalsNeedDo:
             today_feed = medal['medal']['today_feed']
             nick_name = medal['anchor_info']['nick_name']
             if today_feed >= 1500:
@@ -267,13 +316,13 @@ class BiliUser:
         heartNum = 0
         while True:
             tasks = []
-            for medal in self.medalsLower20:
+            for medal in self.medalsNeedDo:
                 tasks.append(self.api.heartbeat(medal['room_info']['room_id'], medal['medal']['target_id']))
             await asyncio.gather(*tasks)
             heartNum += 1
             self.log.log(
                 "INFO",
-                f"{' '.join([medal['anchor_info']['nick_name'] for medal in self.medalsLower20[:5]])} 等共 {len(self.medalsLower20)} 个房间的第{heartNum}次心跳包已发送（{heartNum}/{HEART_MAX}）",
+                f"{' '.join([medal['anchor_info']['nick_name'] for medal in self.medalsNeedDo[:5]])} 等共 {len(self.medalsNeedDo)} 个房间的第{heartNum}次心跳包已发送（{heartNum}/{HEART_MAX}）",
             )
             await asyncio.sleep(60)
             if heartNum >= HEART_MAX:

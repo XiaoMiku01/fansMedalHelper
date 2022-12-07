@@ -18,8 +18,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 class Crypto:
 
-    APPKEY = '1d8b6e7d45233436'
-    APPSECRET = '560c52ccd288fed045859ed18bffd973'
+    APPKEY = '4409e2ce8ffd12b8'
+    APPSECRET = '59b43e04ad6965f34319062b478f83dd'
 
     @staticmethod
     def md5(data: Union[str, bytes]) -> str:
@@ -184,6 +184,30 @@ class BiliApi:
             ),
         )
         # await asyncio.sleep(self.u.config['LIKE_CD'] if not self.u.config['ASYNC'] else 2)
+
+    async def likeInteractV3(self, room_id: int, up_id: int):
+        """
+        点赞直播间V3
+        """
+        url = "https://api.live.bilibili.com/xlive/app-ucenter/v1/like_info_v3/like/likeReportV3"
+        data = {
+            "access_key": self.u.access_key,
+            "actionKey": "appkey",
+            "appkey": Crypto.APPKEY,
+            "ts": int(time.time()),
+            "room_id": room_id,
+            "anchor_id": up_id,
+        }
+        # for _ in range(3):
+        await self.__post(
+            url,
+            data=SingableDict(data).signed,
+            headers=self.headers.update(
+                {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                }
+            ),
+        )
 
     async def shareRoom(self, room_id: int):
         """
