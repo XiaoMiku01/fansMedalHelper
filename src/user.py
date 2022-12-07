@@ -269,7 +269,9 @@ class BiliUser:
             return self.message + self.errmsg
         await self.getMedals()
         nameList1, nameList2, nameList3, nameList4 = [], [], [], []
-        for medal in self.medalsNeedDo:
+        for medal in self.medals:
+            if medal['medal']['level'] >= 20:
+                continue
             today_feed = medal['medal']['today_feed']
             nick_name = medal['anchor_info']['nick_name']
             if today_feed >= 1500:
