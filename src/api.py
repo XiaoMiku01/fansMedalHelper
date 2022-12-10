@@ -152,6 +152,8 @@ class BiliApi:
             data = await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
             if first_flag and data['special_list']:
                 for item in data['special_list']:
+                    # 强制把正在佩戴的牌子加入任务列表
+                    item['medal']['today_feed'] = 0
                     yield item
                 self.u.wearedMedal = data['special_list'][0]
                 first_flag = False
