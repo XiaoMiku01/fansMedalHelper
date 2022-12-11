@@ -55,7 +55,7 @@ body:
               - Windows (64)
               - Windows (32/x84)
               - MacOS
-              - Linux
+              - Linux (云函数)
               - Ubuntu
               - CentOS
               - ArchLinux
@@ -76,8 +76,6 @@ body:
               - ARM [32] (别名：AArch32 / ARMv7）
               - ARM [64] (别名：AArch64 / ARMv8）
               - 其它
-      validations:
-          required: true
 
     # Env | Connection type
     - type: dropdown
