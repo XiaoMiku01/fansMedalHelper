@@ -36,8 +36,6 @@ body:
           value: |
               ## 环境信息
               请根据实际使用环境修改以下信息。
-
-    # Env | go-cqhttp Version
     - type: input
       id: env-ver
       attributes:
@@ -89,8 +87,14 @@ body:
               - 本地
               - 其它（请在下方说明）
       validations:
-          required: true
-
+          required: true   
+          
+    - type: input
+      id: num
+      attributes:
+          label: 粉丝牌数量
+      validations:
+          required: true 
     # Optional | Logging
     - type: textarea
       id: logging
