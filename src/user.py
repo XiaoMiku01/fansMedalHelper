@@ -231,14 +231,14 @@ class BiliUser:
             (await self.api.wearMedal(self.initialMedal['medal_id'])) if self.config['WEARMEDAL'] else ...
         self.log.log("SUCCESS", "弹幕打卡任务完成")
         self.message.append(f"【{self.name}】 弹幕打卡任务完成 {n}/{len(self.medals)}")
-        if n >= 5:
-            try:
-                await self.api.getOneBattery()
-                self.log.log("SUCCESS", "领取电池成功")
-                self.message.append(f"【{self.name}】 领取电池成功")
-            except Exception as e:
-                self.log.log("ERROR", "领取电池失败: {}".format(e))
-                self.errmsg.append(f"【{self.name}】 领取电池失败: {str(e)}")
+        # if n >= 5:
+        #     try:
+        #         await self.api.getOneBattery()
+        #         self.log.log("SUCCESS", "领取电池成功")
+        #         self.message.append(f"【{self.name}】 领取电池成功")
+        #     except Exception as e:
+        #         self.log.log("ERROR", "领取电池失败: {}".format(e))
+        #         self.errmsg.append(f"【{self.name}】 领取电池失败: {str(e)}")
 
     async def init(self):
         if not await self.loginVerify():
