@@ -499,3 +499,16 @@ class BiliApi:
             "ts": int(time.time()),
         }
         return await self.__post(url, data=SingableDict(data).signed, headers=self.headers)
+
+    async def vup_vote(self, mid):
+        url = "https://api.bilibili.com/x/activity/vote_new/do"
+        data = {
+            "access_key": self.u.access_key,
+            "actionKey": "appkey",
+            "appkey": Crypto.APPKEY,
+            "datasource_group_id": "452",
+            "datasource_item_id": mid,
+            "activity_id": "283",
+            "ts": int(time.time()),
+        }
+        return await self.__post(url, data=SingableDict(data).signed, headers=self.headers)
