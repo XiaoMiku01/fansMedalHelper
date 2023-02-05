@@ -1,3 +1,5 @@
+CONFIG:
+    VERSION: 1
 USERS:
     - access_key: XXXXXX # 注意冒号后的空格 否则会读取失败 英文冒号
       white_uid: 0 # 白名单用户ID, 可以是多个用户ID, 以逗号分隔,填写后只会打卡这些用户,黑名单失效，不用就填0
