@@ -17,13 +17,13 @@ class WechatWorkBot(Provider):
         'optional': ['title', 'content', 'markdown']
     }
 
-    def _prepare_url(self, key: str, **kwargs):
+    async def _prepare_url(self, key: str, **kwargs):
         self.url = key
         if 'https' not in key or 'http' not in key:
             self.url = self.base_url.format(key)
         return self.url
 
-    def _prepare_data(self,
+    async def _prepare_data(self,
                       title: str = None,
                       content: str = None,
                       markdown: bool = False,
@@ -36,5 +36,5 @@ class WechatWorkBot(Provider):
         self.data = {'msgtype': msgtype, msgtype: {'content': message}}
         return self.data
 
-    def _send_message(self):
-        return self.request('post', self.url, json=self.data)
+    async def _send_message(self):
+        return await self.request('post', self.url, json=self.data)
