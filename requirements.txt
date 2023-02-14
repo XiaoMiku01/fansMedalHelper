@@ -1,5 +1,13 @@
+<<<<<<< HEAD
+aiohttp
+loguru
+pyyaml
+apscheduler
+requests
+=======
 aiohttp 
 aiohttp_socks
 loguru 
 pyyaml 
 apscheduler
+>>>>>>> f0658d6657e18801f0b9a841a7683aa9a35176e2

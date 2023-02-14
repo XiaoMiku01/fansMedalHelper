@@ -4,21 +4,15 @@
 @Blog      : https://www.yindan.me
 """
 
-# import logging
-from loguru import logger
+import logging
 
-# import requests
-from aiohttp import ClientSSLError, ClientSession, TCPConnector
-
-
-# from requests.exceptions import SSLError
+import requests
+from requests.exceptions import SSLError
 
 from .exceptions import NoSuchNotifierError
 from .exceptions import OnePushException
 
-# log = logging.getLogger('onepush')
-
-log = None
+log = logging.getLogger('onepush')
 
 
 class Provider(object):
@@ -32,22 +26,21 @@ class Provider(object):
         self.datatype = 'data'
         self.url = None
         self.data = None
-        self.proxy = None
 
-    async def _prepare_url(self, **kwargs):
+    def _prepare_url(self, **kwargs):
         ...
 
-    async def _prepare_data(self, **kwargs):
+    def _prepare_data(self, **kwargs):
         ...
 
-    async def _send_message(self):
+    def _send_message(self):
         if self.method.upper() == 'GET':
             response = self.request('get', self.url, params=self.data)
         elif self.method.upper() == 'POST':
             if self.datatype.lower() == 'json':
-                response = await self.request('post', self.url, json=self.data)
+                response = self.request('post', self.url, json=self.data)
             else:
-                response = await self.request('post', self.url, data=self.data)
+                response = self.request('post', self.url, data=self.data)
         else:
             raise OnePushException('Request method {} not supported.'.format(self.method))
 
@@ -66,44 +59,26 @@ class Provider(object):
             message = title
         return message
 
-    # @staticmethod
-    async def request(self, method, url: str, **kwargs):
-        if self.proxy:
-            from aiohttp_socks import ProxyConnector
-        # session = requests.Session()
-        # session = (
-        #     ClientSession() if not self.proxy else ClientSession(connector=TCPConnector(verify_ssl=False))
-        # )
-        # response = None
+    @staticmethod
+    def request(method, url, **kwargs):
+        session = requests.Session()
+        response = None
         try:
-            if self.proxy:
-                connector = ProxyConnector.from_url(self.proxy)
-                session = ClientSession(connector=connector)
-                response = await session.request(method, url, **kwargs)
-            else:
-                session = ClientSession()
-                response = await session.request(method, url, **kwargs)
-            # log.debug('Response: {}'.format(response.text))
-        except ClientSSLError as e:
+            response = session.request(method, url, **kwargs)
+            log.debug('Response: {}'.format(response.text))
+        except SSLError as e:
             log.error(e)
-            if self.proxy:
-                connector = ProxyConnector.from_url(self.proxy, verify_ssl=False)
-            else:
-                connector = TCPConnector(verify_ssl=False)
-            session = ClientSession(connector=connector)
-            response = await session.request(method, url.replace('https', 'http'), proxy=self.proxy, **kwargs)
-            # log.debug('Response: {}'.format(response.text))
+            response = session.request(method, url, verify=False, **kwargs)
+            log.debug('Response: {}'.format(response.text))
         except Exception as e:
             log.error(e)
         finally:
-            await session.close()
             return response
 
-    async def notify(self, **kwargs):
-        self.proxy = kwargs.get('proxy')
-        await self._prepare_url(**kwargs)
-        await self._prepare_data(**kwargs)
-        return await self._send_message()
+    def notify(self, **kwargs):
+        self._prepare_url(**kwargs)
+        self._prepare_data(**kwargs)
+        return self._send_message()
 
 
 from .providers import _all_providers  # noqa: E402
@@ -119,8 +94,5 @@ def get_notifier(provider_name: str):
     return _all_providers[provider_name]()
 
 
-async def notify(provider_name: str, **kwargs):
-    global log
-    log = logger.bind(user=f"{provider_name} 推送")
-
-    return await get_notifier(provider_name).notify(**kwargs)
+def notify(provider_name: str, **kwargs):
+    return get_notifier(provider_name).notify(**kwargs)

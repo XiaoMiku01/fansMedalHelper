@@ -14,28 +14,34 @@ class PushPlus(Provider):
 
     _params = {
         'required': ['token', 'content'],
-        'optional': ['title', 'topic', 'markdown']
+        'optional': ['title', 'topic', 'markdown', 'channel', 'webhook', 'callbackUrl']
     }
 
-    async def _prepare_url(self, **kwargs):
+    def _prepare_url(self, **kwargs):
         self.url = self.base_url
         return self.url
 
-    async def _prepare_data(self,
+    def _prepare_data(self,
                       content: str,
                       token: str = None,
                       title: str = None,
                       topic: str = None,
                       markdown: bool = False,
+                      channel: str = None,
+                      webhook: str = None,
+                      callbackUrl: str = None,
                       **kwargs):
         self.data = {
             'token': token,
             'title': title,
             'content': content,
             'template': 'markdown' if markdown else 'html',
-            'topic': topic
+            'topic': topic,
+            'channel': channel,
+            'webhook': webhook,
+            'callbackUrl': callbackUrl
         }
         return self.data
 
-    async def _send_message(self):
-        return await self.request('post', self.url, json=self.data)
+    def _send_message(self):
+        return self.request('post', self.url, json=self.data)

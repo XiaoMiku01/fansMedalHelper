@@ -17,21 +17,22 @@ class WechatWorkApp(Provider):
         'optional': ['title', 'content', 'touser', 'markdown']
     }
 
-    async def _prepare_url(self, corpid: str, corpsecret: str, **kwargs):
+    def _prepare_url(self, corpid: str, corpsecret: str, **kwargs):
         url = 'https://qyapi.weixin.qq.com/cgi-bin/gettoken'
         data = {'corpid': corpid, 'corpsecret': corpsecret}
-        response = (await self.request('get', url, params=data)).json()
-        access_token = (await response).get('access_token')
+        response = self.request('get', url, params=data).json()
+        access_token = response.get('access_token')
+
         self.url = self.base_url.format(access_token)
         return self.url
 
-    async def _prepare_data(self,
-                            agentid: str,
-                            title: str = None,
-                            content: str = None,
-                            touser: str = '@all',
-                            markdown: bool = False,
-                            **kwargs):
+    def _prepare_data(self,
+                      agentid: str,
+                      title: str = None,
+                      content: str = None,
+                      touser: str = '@all',
+                      markdown: bool = False,
+                      **kwargs):
         message = self.process_message(title, content)
         msgtype = 'text'
         if markdown:
@@ -47,5 +48,5 @@ class WechatWorkApp(Provider):
         }
         return self.data
 
-    async def _send_message(self):
-        return await self.request('post', self.url, json=self.data)
+    def _send_message(self):
+        return self.request('post', self.url, json=self.data)
