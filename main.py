@@ -15,6 +15,7 @@ warnings.filterwarnings(
     message="The localize method is no longer necessary, as this time zone supports the fold attribute",
 )
 os.chdir(os.path.dirname(os.path.abspath(__file__)).split(__file__)[0])
+
 try:
     if os.environ.get("USERS"):
         users = json.loads(os.environ.get("USERS"))
@@ -51,7 +52,9 @@ async def main():
     try:
         log.warning("当前版本为: " + __VERSION__)
         resp = await (
-            await session.get("http://version.fansmedalhelper.1961584514352337.cn-hangzhou.fc.devsapp.net/")
+            await session.get(
+                "http://version.fansmedalhelper.1961584514352337.cn-hangzhou.fc.devsapp.net/"
+            )
         ).json()
         if resp['version'] != __VERSION__:
             log.warning("新版本为: " + resp['version'] + ",请更新")
@@ -61,16 +64,19 @@ async def main():
         if resp['notice']:
             log.warning("公告: " + resp['notice'])
             messageList.append(f"公告: {resp['notice']}")
-    except Exception:
-        messageList.append("检查版本失败")
-        log.warning("检查版本失败")
+    except Exception as ex:
+        messageList.append(f"检查版本失败，{ex}")
+        log.warning(f"检查版本失败，{ex}")
     initTasks = []
     startTasks = []
     catchMsg = []
     for user in users['USERS']:
         if user['access_key']:
             biliUser = BiliUser(
-                user['access_key'], user.get('white_uid', ''), user.get('banned_uid', ''), config
+                user['access_key'],
+                user.get('white_uid', ''),
+                user.get('banned_uid', ''),
+                config,
             )
             initTasks.append(biliUser.init())
             startTasks.append(biliUser.start())
@@ -83,7 +89,9 @@ async def main():
         # messageList = messageList + list(itertools.chain.from_iterable(await asyncio.gather(*catchMsg)))
         messageList.append(f"任务执行失败: {e}")
     finally:
-        messageList = messageList + list(itertools.chain.from_iterable(await asyncio.gather(*catchMsg)))
+        messageList = messageList + list(
+            itertools.chain.from_iterable(await asyncio.gather(*catchMsg))
+        )
     [log.info(message) for message in messageList]
     if users.get('SENDKEY', ''):
         await push_message(session, users['SENDKEY'], "  \n".join(messageList))
@@ -106,7 +114,7 @@ async def main():
 def run(*args, **kwargs):
     loop = asyncio.new_event_loop()
     loop.run_until_complete(main())
-    log.info("任务结束,等待下一次执行")
+    log.info("任务结束，等待下一次执行。")
 
 
 async def push_message(session, sendkey, message):
@@ -118,17 +126,26 @@ async def push_message(session, sendkey, message):
 
 if __name__ == '__main__':
     from apscheduler.schedulers.blocking import BlockingScheduler
-    from apscheduler.triggers.cron import CronTrigger
 
     cron = users.get('CRON', None)
+
     if cron:
-        log.info('使用内置定时器,开启定时任务,等待时间到达后执行')
+        from apscheduler.triggers.cron import CronTrigger
+
+        log.info(f'使用内置定时器 {cron}，开启定时任务，等待时间到达后执行。')
         schedulers = BlockingScheduler()
         schedulers.add_job(run, CronTrigger.from_crontab(cron), misfire_grace_time=3600)
         schedulers.start()
     else:
-        log.info('外部调用,开启任务')
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(main())
-        log.info("任务结束")
+        from apscheduler.triggers.interval import IntervalTrigger
+        import datetime
+
+        log.info('未配置定时器，每隔 24 小时运行一次。')
+        scheduler = BlockingScheduler(timezone='Asia/Shanghai')
+        scheduler.add_job(
+            run,
+            IntervalTrigger(hours=24),
+            next_run_time=datetime.datetime.now(),
+            misfire_grace_time=3600,
+        )
+        scheduler.start()

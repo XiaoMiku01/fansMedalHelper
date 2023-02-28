@@ -1,3 +1,0 @@
-aiohttp 
-aiohttp_socks
-loguru 

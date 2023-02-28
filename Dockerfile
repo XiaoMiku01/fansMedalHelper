@@ -1,13 +1,14 @@
-FROM python:3.9-slim
+FROM python:3.9-alpine
 ENV TZ="Asia/Shanghai"
-RUN apt-get update && apt-get install -y --no-install-recommends git \
-    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /tmp
+
+RUN apk add --no-cache git \
+    && git config --global --add safe.directory "*" \
+    && git clone https://github.com/XiaoMiku01/fansMedalHelper /app/fansMedalHelper \
+    && pip install --no-cache-dir -r /app/fansMedalHelper/requirements.txt \
+    && rm -rf /tmp/*
 
 WORKDIR /app/fansMedalHelper
 
-COPY . .
-
-RUN  pip3 install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-
-
-CMD [ "python", "index.py" ]
+ENTRYPOINT ["/bin/sh","/app/fansMedalHelper/entrypoint.sh"]
