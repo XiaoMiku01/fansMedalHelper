@@ -39,7 +39,7 @@ esac
 
 echo -e "${Green} [INFO] 拉取项目更新... ${Plain}"
 git config --global --add safe.directory "*"
-git pull
+git pull --no-tags origin master
 
 echo -e "${Green} [INFO] 开始运行... ${Plain}"
 python3 main.py
