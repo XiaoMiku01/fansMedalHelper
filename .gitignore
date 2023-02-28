@@ -8,3 +8,6 @@ go.sum
 login_info.txt
 users.yaml
 *.tmp
+.venv
+venv/
+.idea/
