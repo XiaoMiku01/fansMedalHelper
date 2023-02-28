@@ -114,7 +114,7 @@ async def main():
 def run(*args, **kwargs):
     loop = asyncio.new_event_loop()
     loop.run_until_complete(main())
-    log.info("任务结束,等待下一次执行")
+    log.info("任务结束，等待下一次执行。")
 
 
 async def push_message(session, sendkey, message):
@@ -126,17 +126,26 @@ async def push_message(session, sendkey, message):
 
 if __name__ == '__main__':
     from apscheduler.schedulers.blocking import BlockingScheduler
-    from apscheduler.triggers.cron import CronTrigger
 
     cron = users.get('CRON', None)
+
     if cron:
-        log.info(f'使用内置定时器 {cron}，开启定时任务，等待时间到达后执行')
+        from apscheduler.triggers.cron import CronTrigger
+
+        log.info(f'使用内置定时器 {cron}，开启定时任务，等待时间到达后执行。')
         schedulers = BlockingScheduler()
         schedulers.add_job(run, CronTrigger.from_crontab(cron), misfire_grace_time=3600)
         schedulers.start()
     else:
-        log.info('未配置定时器，开启任务')
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(main())
-        log.info("任务结束")
+        from apscheduler.triggers.interval import IntervalTrigger
+        import datetime
+
+        log.info('未配置定时器，每隔 24 小时运行一次。')
+        scheduler = BlockingScheduler(timezone='Asia/Shanghai')
+        scheduler.add_job(
+            run,
+            IntervalTrigger(hours=24),
+            next_run_time=datetime.datetime.now(),
+            misfire_grace_time=3600,
+        )
+        scheduler.start()
