@@ -135,7 +135,7 @@ if __name__ == '__main__':
         schedulers.add_job(run, CronTrigger.from_crontab(cron), misfire_grace_time=3600)
         schedulers.start()
     else:
-        log.info('未配置定时器（外部调用），开启任务')
+        log.info('未配置定时器，开启任务')
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         loop.run_until_complete(main())
