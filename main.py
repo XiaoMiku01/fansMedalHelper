@@ -137,15 +137,8 @@ if __name__ == '__main__':
         schedulers.add_job(run, CronTrigger.from_crontab(cron), misfire_grace_time=3600)
         schedulers.start()
     else:
-        from apscheduler.triggers.interval import IntervalTrigger
-        import datetime
-
-        log.info('未配置定时器，每隔 24 小时运行一次。')
-        scheduler = BlockingScheduler(timezone='Asia/Shanghai')
-        scheduler.add_job(
-            run,
-            IntervalTrigger(hours=24),
-            next_run_time=datetime.datetime.now(),
-            misfire_grace_time=3600,
-        )
-        scheduler.start()
+        log.info('未配置定时器，开启单次任务')
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(main())
+        log.info("任务结束")
