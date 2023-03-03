@@ -15,11 +15,7 @@ services:
         actions:
             pre-deploy:
                 - run: pip3 install -r requirements.txt -t .
-                  path: ./code
-                - run: git clone https://github.com/XiaoMiku01/fansMedalHelper.git
-                  path: ./code
-                - run: cd fansMedalHelper && cp -r * .. && cd ..
-                  path: ./code
+                  path: ./
         props:
             region: ${vars.region}
             service: ${vars.service}
@@ -27,12 +23,13 @@ services:
                 name: "fans-medal-helper-function"
                 description: "B站粉丝牌助手"
                 runtime: python3.9
-                codeUri: ./code
+                codeUri: ./
                 handler: main.run
                 memorySize: 128
                 timeout: 86400
                 environmentVariables:
                     USERS: ${env(USERS)}
+                    TZ: Asia/Shanghai
             triggers:
                 - name: timer
                   type: timer

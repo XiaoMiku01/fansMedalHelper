@@ -42,4 +42,4 @@ git config --global --add safe.directory "*"
 git pull --no-tags origin master
 
 echo -e "${Green} [INFO] 开始运行... ${Plain}"
-python3 main.py
+python3 main.py --auto

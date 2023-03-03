@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from loguru import logger
 import warnings
 import asyncio
@@ -125,19 +126,32 @@ async def push_message(session, sendkey, message):
 
 
 if __name__ == '__main__':
-    from apscheduler.schedulers.blocking import BlockingScheduler
-
     cron = users.get('CRON', None)
 
     if cron:
+        from apscheduler.schedulers.blocking import BlockingScheduler
         from apscheduler.triggers.cron import CronTrigger
 
         log.info(f'使用内置定时器 {cron}，开启定时任务，等待时间到达后执行。')
         schedulers = BlockingScheduler()
         schedulers.add_job(run, CronTrigger.from_crontab(cron), misfire_grace_time=3600)
         schedulers.start()
+    elif "--auto" in sys.argv:
+        from apscheduler.schedulers.blocking import BlockingScheduler
+        from apscheduler.triggers.interval import IntervalTrigger
+        import datetime
+
+        log.info('使用自动守护模式，每隔 24 小时运行一次。')
+        scheduler = BlockingScheduler(timezone='Asia/Shanghai')
+        scheduler.add_job(
+            run,
+            IntervalTrigger(hours=24),
+            next_run_time=datetime.datetime.now(),
+            misfire_grace_time=3600,
+        )
+        scheduler.start()
     else:
-        log.info('未配置定时器，开启单次任务')
+        log.info('未配置定时器，开启单次任务。')
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         loop.run_until_complete(main())
