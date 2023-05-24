@@ -61,5 +61,5 @@
 
 ### 鸣谢
 
-[<img src="https://github.com/XiaoMiku01/fansMedalHelper/assets/54094119/68eacd71-afd3-4202-889d-32867a4e8ef2" width="200"/>](https://www.cloudflare.com/)
+[<img src="http://i0.hdslb.com/bfs/new_dyn/fd40ebdbfba9cef081888fdae6dc6e123461575962790189.png" width="200"/>](https://www.cloudflare.com/)
 [<img src="https://user-images.githubusercontent.com/11474360/112592917-baa00600-8e41-11eb-9da4-ecb53bb3c2fa.png" width="200"/>](https://jb.gg/OpenSource)
