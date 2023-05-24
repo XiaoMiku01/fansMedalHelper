@@ -13,7 +13,6 @@
 
 -   [x] 每日直播区签到
 -   [x] 每日点赞 1 次直播间 （100 亲密度）
--   ~~[x] 每日分享 1 次直播间 （100 亲密度）~~
 -   [x] 每日弹幕打卡（100 亲密度）
 -   [x] 每日观看 65 分钟 （ 每 5 分钟 100 共 1300 亲密度）
 -   [x] 每日应援团签到 (如果有的话) （10 亲密度）
@@ -36,7 +35,6 @@
 ### 问题反馈
 
 -   提 issue
--   B 站私信 [晓小轩 iAVA](https://space.bilibili.com/1772442517)  
     **提之前请明确问题主题和运行日志**
 
 ---
@@ -60,3 +58,8 @@
 ### 赞助
 
 <img src="http://i0.hdslb.com/bfs/album/c267037c9513b8e44bc6ec95dbf772ff0439dce6.jpg" width="500" />
+
+### 鸣谢
+
+[<img src="https://github.com/XiaoMiku01/fansMedalHelper/assets/54094119/68eacd71-afd3-4202-889d-32867a4e8ef2" width="200"/>](https://www.cloudflare.com/)
+[<img src="https://user-images.githubusercontent.com/11474360/112592917-baa00600-8e41-11eb-9da4-ecb53bb3c2fa.png" width="200"/>](https://jb.gg/OpenSource)
