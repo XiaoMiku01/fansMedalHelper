@@ -38,7 +38,7 @@ class Crypto:
         return Crypto.md5(_str + Crypto.APPSECRET)
 
 
-class SingableDict(dict):
+class SignableDict(dict):
     @property
     def sorted(self):
         '''returns a alphabetically sorted version of `self`'''
@@ -149,7 +149,7 @@ class BiliApi:
         }
         first_flag = True
         while True:
-            data = await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
+            data = await self.__get(url, params=SignableDict(params).signed, headers=self.headers)
             if first_flag and data['special_list']:
                 for item in data['special_list']:
                     # 强制把正在佩戴的牌子加入任务列表
@@ -178,7 +178,7 @@ class BiliApi:
         # for _ in range(3):
         await self.__post(
             url,
-            data=SingableDict(data).signed,
+            data=SignableDict(data).signed,
             headers=self.headers.update(
                 {
                     "Content-Type": "application/x-www-form-urlencoded",
@@ -203,7 +203,7 @@ class BiliApi:
         # for _ in range(3):
         await self.__post(
             url,
-            data=SingableDict(data).signed,
+            data=SignableDict(data).signed,
             headers=self.headers.update(
                 {
                     "Content-Type": "application/x-www-form-urlencoded",
@@ -227,7 +227,7 @@ class BiliApi:
         # for _ in range(5):
         await self.__post(
             url,
-            data=SingableDict(data).signed,
+            data=SignableDict(data).signed,
             headers=self.headers.update(
                 {
                     "Content-Type": "application/x-www-form-urlencoded",
@@ -274,7 +274,7 @@ class BiliApi:
         try:
             resp = await self.__post(
                 url,
-                params=SingableDict(params).signed,
+                params=SignableDict(params).signed,
                 data=data,
                 headers=self.headers.update(
                     {
@@ -297,7 +297,7 @@ class BiliApi:
                 )
                 resp = await self.__post(
                     url,
-                    params=SingableDict(params).signed,
+                    params=SignableDict(params).signed,
                     data=data,
                     headers=self.headers.update(
                         {
@@ -320,7 +320,7 @@ class BiliApi:
             "appkey": Crypto.APPKEY,
             "ts": int(time.time()),
         }
-        return await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
+        return await self.__get(url, params=SignableDict(params).signed, headers=self.headers)
 
     async def doSign(self):
         """
@@ -333,7 +333,7 @@ class BiliApi:
             "appkey": Crypto.APPKEY,
             "ts": int(time.time()),
         }
-        return await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
+        return await self.__get(url, params=SignableDict(params).signed, headers=self.headers)
 
     async def getUserInfo(self):
         """
@@ -346,7 +346,7 @@ class BiliApi:
             "appkey": Crypto.APPKEY,
             "ts": int(time.time()),
         }
-        return await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
+        return await self.__get(url, params=SignableDict(params).signed, headers=self.headers)
 
     async def getMedalsInfoByUid(self, uid: int):
         """
@@ -360,7 +360,7 @@ class BiliApi:
             "ts": int(time.time()),
             "target_id": uid,
         }
-        return await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
+        return await self.__get(url, params=SignableDict(params).signed, headers=self.headers)
 
     # async def entryRoom(self, room_id: int, up_id: int):
     #     data = {
@@ -433,7 +433,7 @@ class BiliApi:
         )
         return await self.__post(
             url,
-            data=SingableDict(data).signed,
+            data=SignableDict(data).signed,
             headers=self.headers.update(
                 {
                     "Content-Type": "application/x-www-form-urlencoded",
@@ -458,7 +458,7 @@ class BiliApi:
         }
         return await self.__post(
             url,
-            data=SingableDict(data).signed,
+            data=SignableDict(data).signed,
             headers=self.headers.update(
                 {
                     "Content-Type": "application/x-www-form-urlencoded",
@@ -474,7 +474,7 @@ class BiliApi:
             "appkey": Crypto.APPKEY,
             "ts": int(time.time()),
         }
-        list = (await self.__get(url, params=SingableDict(params).signed, headers=self.headers))['list']
+        list = (await self.__get(url, params=SignableDict(params).signed, headers=self.headers))['list']
         for group in list:
             yield group
 
@@ -488,7 +488,7 @@ class BiliApi:
             "group_id": group_id,
             "owner_id": owner_id,
         }
-        return await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
+        return await self.__get(url, params=SignableDict(params).signed, headers=self.headers)
 
     async def getOneBattery(self):
         url = "https://api.live.bilibili.com/xlive/app-ucenter/v1/userTask/UserTaskReceiveRewards"
@@ -498,4 +498,4 @@ class BiliApi:
             "appkey": Crypto.APPKEY,
             "ts": int(time.time()),
         }
-        return await self.__post(url, data=SingableDict(data).signed, headers=self.headers)
+        return await self.__post(url, data=SignableDict(data).signed, headers=self.headers)
