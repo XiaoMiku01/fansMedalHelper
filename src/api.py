@@ -172,7 +172,7 @@ class BiliApi:
             "access_key": self.u.access_key,
             "actionKey": "appkey",
             "appkey": Crypto.APPKEY,
-            "ts": int(time.time()),
+            "click_time": int(time.time()),
             "roomid": room_id,
         }
         # for _ in range(3):
@@ -196,7 +196,7 @@ class BiliApi:
             "access_key": self.u.access_key,
             "actionKey": "appkey",
             "appkey": Crypto.APPKEY,
-            "ts": int(time.time()),
+            "click_time": int(time.time()),
             "room_id": room_id,
             "anchor_id": up_id,
         }
