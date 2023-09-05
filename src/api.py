@@ -187,7 +187,7 @@ class BiliApi:
         )
         # await asyncio.sleep(self.u.config['LIKE_CD'] if not self.u.config['ASYNC'] else 2)
 
-    async def likeInteractV3(self, room_id: int, up_id: int):
+    async def likeInteractV3(self, room_id: int, up_id: int,self_uid:int):
         """
         点赞直播间V3
         """
@@ -199,6 +199,7 @@ class BiliApi:
             "click_time": 1,
             "room_id": room_id,
             "anchor_id": up_id,
+            "uid":self_uid
         }
         # for _ in range(3):
         await self.__post(
