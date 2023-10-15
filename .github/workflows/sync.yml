@@ -7,7 +7,7 @@ on:
   pull_request:
     branches: [ "master" ]
   schedule:
-    - cron: '0 * * * *' # 每小时 0分触发, 对于一些更新不那么频繁的项目可以设置为每天一次, 低碳一点
+    - cron: '0 1 1 * *' # 每月 1日触发
 jobs:
   repo-sync:
     runs-on: ubuntu-latest
