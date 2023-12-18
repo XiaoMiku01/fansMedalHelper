@@ -475,7 +475,8 @@ class BiliApi:
             "appkey": Crypto.APPKEY,
             "ts": int(time.time()),
         }
-        list = (await self.__get(url, params=SingableDict(params).signed, headers=self.headers))['list']
+        res = (await self.__get(url, params=SingableDict(params).signed, headers=self.headers))
+        list = res['list'] if 'list' in res else []
         for group in list:
             yield group
 
