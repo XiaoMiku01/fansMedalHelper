@@ -49,7 +49,7 @@ except Exception as e:
 @log.catch
 async def main():
     messageList = []
-    session = aiohttp.ClientSession()
+    session = aiohttp.ClientSession(trust_env = True)
     try:
         log.warning("当前版本为: " + __VERSION__)
         resp = await (

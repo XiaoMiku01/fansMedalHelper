@@ -468,14 +468,15 @@ class BiliApi:
         )
 
     async def getGroups(self):
-        url = "https://api.live.bilibili.com/link_group/v1/member/my_groups"
+        url = "https://api.vc.bilibili.com/link_group/v1/member/my_groups"
         params = {
             "access_key": self.u.access_key,
             "actionKey": "appkey",
             "appkey": Crypto.APPKEY,
             "ts": int(time.time()),
         }
-        list = (await self.__get(url, params=SingableDict(params).signed, headers=self.headers))['list']
+        res = (await self.__get(url, params=SingableDict(params).signed, headers=self.headers))
+        list = res['list'] if 'list' in res else []
         for group in list:
             yield group
 
