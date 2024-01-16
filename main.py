@@ -9,7 +9,7 @@ import itertools
 from src import BiliUser
 
 log = logger.bind(user="B站粉丝牌助手")
-__VERSION__ = "0.3.7"
+__VERSION__ = "0.3.8"
 
 warnings.filterwarnings(
     "ignore",
@@ -23,23 +23,23 @@ try:
     else:
         import yaml
 
-        with open('users.yaml', 'r', encoding='utf-8') as f:
+        with open("users.yaml", "r", encoding="utf-8") as f:
             users = yaml.load(f, Loader=yaml.FullLoader)
-    assert users['ASYNC'] in [0, 1], "ASYNC参数错误"
-    assert users['LIKE_CD'] >= 0, "LIKE_CD参数错误"
+    assert users["ASYNC"] in [0, 1], "ASYNC参数错误"
+    assert users["LIKE_CD"] >= 0, "LIKE_CD参数错误"
     # assert users['SHARE_CD'] >= 0, "SHARE_CD参数错误"
-    assert users['DANMAKU_CD'] >= 0, "DANMAKU_CD参数错误"
-    assert users['WATCHINGLIVE'] >= 0, "WATCHINGLIVE参数错误"
-    assert users['WEARMEDAL'] in [0, 1], "WEARMEDAL参数错误"
+    assert users["DANMAKU_CD"] >= 0, "DANMAKU_CD参数错误"
+    assert users["WATCHINGLIVE"] >= 0, "WATCHINGLIVE参数错误"
+    assert users["WEARMEDAL"] in [0, 1], "WEARMEDAL参数错误"
     config = {
-        "ASYNC": users['ASYNC'],
-        "LIKE_CD": users['LIKE_CD'],
+        "ASYNC": users["ASYNC"],
+        "LIKE_CD": users["LIKE_CD"],
         # "SHARE_CD": users['SHARE_CD'],
-        "DANMAKU_CD": users['DANMAKU_CD'],
-        "WATCHINGLIVE": users['WATCHINGLIVE'],
-        "WEARMEDAL": users['WEARMEDAL'],
-        "SIGNINGROUP": users.get('SIGNINGROUP', 2),
-        "PROXY": users.get('PROXY'),
+        "DANMAKU_CD": users["DANMAKU_CD"],
+        "WATCHINGLIVE": users["WATCHINGLIVE"],
+        "WEARMEDAL": users["WEARMEDAL"],
+        "SIGNINGROUP": users.get("SIGNINGROUP", 2),
+        "PROXY": users.get("PROXY"),
     }
 except Exception as e:
     log.error(f"读取配置文件失败,请检查配置文件格式是否正确: {e}")
@@ -49,7 +49,7 @@ except Exception as e:
 @log.catch
 async def main():
     messageList = []
-    session = aiohttp.ClientSession(trust_env = True)
+    session = aiohttp.ClientSession(trust_env=True)
     try:
         log.warning("当前版本为: " + __VERSION__)
         resp = await (
@@ -57,13 +57,13 @@ async def main():
                 "http://version.fansmedalhelper.1961584514352337.cn-hangzhou.fc.devsapp.net/"
             )
         ).json()
-        if resp['version'] != __VERSION__:
-            log.warning("新版本为: " + resp['version'] + ",请更新")
-            log.warning("更新内容: " + resp['changelog'])
+        if resp["version"] != __VERSION__:
+            log.warning("新版本为: " + resp["version"] + ",请更新")
+            log.warning("更新内容: " + resp["changelog"])
             messageList.append(f"当前版本: {__VERSION__} ,最新版本: {resp['version']}")
             messageList.append(f"更新内容: {resp['changelog']} ")
-        if resp['notice']:
-            log.warning("公告: " + resp['notice'])
+        if resp["notice"]:
+            log.warning("公告: " + resp["notice"])
             messageList.append(f"公告: {resp['notice']}")
     except Exception as ex:
         messageList.append(f"检查版本失败，{ex}")
@@ -71,12 +71,12 @@ async def main():
     initTasks = []
     startTasks = []
     catchMsg = []
-    for user in users['USERS']:
-        if user['access_key']:
+    for user in users["USERS"]:
+        if user["access_key"]:
             biliUser = BiliUser(
-                user['access_key'],
-                user.get('white_uid', ''),
-                user.get('banned_uid', ''),
+                user["access_key"],
+                user.get("white_uid", ""),
+                user.get("banned_uid", ""),
                 config,
             )
             initTasks.append(biliUser.init())
@@ -94,20 +94,20 @@ async def main():
             itertools.chain.from_iterable(await asyncio.gather(*catchMsg))
         )
     [log.info(message) for message in messageList]
-    if users.get('SENDKEY', ''):
-        await push_message(session, users['SENDKEY'], "  \n".join(messageList))
+    if users.get("SENDKEY", ""):
+        await push_message(session, users["SENDKEY"], "  \n".join(messageList))
     await session.close()
-    if users.get('MOREPUSH', ''):
+    if users.get("MOREPUSH", ""):
         from onepush import notify
 
-        notifier = users['MOREPUSH']['notifier']
-        params = users['MOREPUSH']['params']
+        notifier = users["MOREPUSH"]["notifier"]
+        params = users["MOREPUSH"]["params"]
         await notify(
             notifier,
             title=f"【B站粉丝牌助手推送】",
             content="  \n".join(messageList),
             **params,
-            proxy=config.get('PROXY'),
+            proxy=config.get("PROXY"),
         )
         log.info(f"{notifier} 已推送")
 
@@ -125,14 +125,14 @@ async def push_message(session, sendkey, message):
     log.info("Server酱已推送")
 
 
-if __name__ == '__main__':
-    cron = users.get('CRON', None)
+if __name__ == "__main__":
+    cron = users.get("CRON", None)
 
     if cron:
         from apscheduler.schedulers.blocking import BlockingScheduler
         from apscheduler.triggers.cron import CronTrigger
 
-        log.info(f'使用内置定时器 {cron}，开启定时任务，等待时间到达后执行。')
+        log.info(f"使用内置定时器 {cron}，开启定时任务，等待时间到达后执行。")
         schedulers = BlockingScheduler()
         schedulers.add_job(run, CronTrigger.from_crontab(cron), misfire_grace_time=3600)
         schedulers.start()
@@ -141,8 +141,8 @@ if __name__ == '__main__':
         from apscheduler.triggers.interval import IntervalTrigger
         import datetime
 
-        log.info('使用自动守护模式，每隔 24 小时运行一次。')
-        scheduler = BlockingScheduler(timezone='Asia/Shanghai')
+        log.info("使用自动守护模式，每隔 24 小时运行一次。")
+        scheduler = BlockingScheduler(timezone="Asia/Shanghai")
         scheduler.add_job(
             run,
             IntervalTrigger(hours=24),
@@ -151,7 +151,7 @@ if __name__ == '__main__':
         )
         scheduler.start()
     else:
-        log.info('未配置定时器，开启单次任务。')
+        log.info("未配置定时器，开启单次任务。")
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         loop.run_until_complete(main())
