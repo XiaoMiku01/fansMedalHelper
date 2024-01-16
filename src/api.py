@@ -197,7 +197,7 @@ class BiliApi:
             "click_time": 1,
             "room_id": room_id,
             "anchor_id": up_id,
-            "uid": self_uid,
+            "uid": up_id,
         }
         self.headers.update(
             {
@@ -294,7 +294,7 @@ class BiliApi:
                 resp = await self.__post(
                     url, params=SingableDict(params).signed, data=data, headers=self.headers
                 )
-                print(resp["mode_info"]["extra"])
+                # print(resp["mode_info"]["extra"])
                 return json.loads(resp["mode_info"]["extra"])["content"]
             raise e
         return json.loads(resp["mode_info"]["extra"])["content"]
