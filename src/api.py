@@ -451,7 +451,7 @@ class BiliApi:
         return await self.__post(url, data=SingableDict(data).signed, headers=self.headers)
 
     async def getGroups(self):
-        url = "https://api.vc.bilibili.com/link_group/v1/member/my_groups"
+        url = "https://api.vc.bilibili.com/link_group/v1/member/my_groups?build=0&mobi_app=web"
         params = {
             "access_key": self.u.access_key,
             "actionKey": "appkey",
