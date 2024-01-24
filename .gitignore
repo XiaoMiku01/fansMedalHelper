@@ -12,3 +12,4 @@ users.yaml
 venv/
 .idea/
 *.swp
+.python-version
