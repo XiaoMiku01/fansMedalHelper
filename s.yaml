@@ -8,7 +8,7 @@ vars:
     service:
         name: "fans-medal-helper-service"
         description: "B站粉丝牌助手"
-        logConfig: auto
+        logConfig: false
 services:
     fansmedalhelper:
         component: fc
