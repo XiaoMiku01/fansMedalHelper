@@ -24,7 +24,7 @@ case ${MIRRORS} in
 "1")
     # https://ghproxy.com/
     echo -e "${Green} [INFO] 使用镜像源-GHProxy ${Plain}"
-    git remote set-url origin https://ghproxy.com/https://github.com/XiaoMiku01/fansMedalHelper.git
+    git remote set-url origin https://mirror.ghproxy.com/https://github.com/XiaoMiku01/fansMedalHelper.git
     ;;
 "2")
     # http://fastgit.org/
