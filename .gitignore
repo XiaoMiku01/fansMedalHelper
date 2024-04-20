@@ -12,3 +12,7 @@ users.yaml
 venv/
 .idea/
 *.swp
+.python-version
+.DS_Store
+**/.DS_Store
+.DS_Store?
