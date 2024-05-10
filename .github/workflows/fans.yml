@@ -1,0 +1,23 @@
+name: Fans Medal Workflow
+on:
+  # 开启手动执行，提供调试
+  workflow_dispatch:
+  schedule:
+    # 每日运行的时间，注意这里是零时区，北京时间需要时区换算，默认是凌晨6点
+    - cron: "0 22 * * *"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Run Fans Medal Workflow
+        env:
+          USERS: ${{secrets.USERS}}
+        run: python main.py
