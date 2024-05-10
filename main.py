@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import sys
@@ -44,6 +45,26 @@ try:
 except Exception as e:
     log.error(f"读取配置文件失败,请检查配置文件格式是否正确: {e}")
     exit(1)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='设置 loguru 的日志等级')
+    parser.add_argument('--log-level', default='INFO', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                        help='设置日志级别（默认为 INFO）')
+    return parser.parse_args()
+
+
+def setting_logger():
+    args = parse_args()
+    logger.remove()
+    logger.add(
+        sys.stdout,
+        colorize=True,
+        level=args.log_level,
+        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> <blue> {extra[user]} </blue> <level>{message}</level>",
+        backtrace=True,
+        diagnose=True,
+    )
 
 
 @log.catch
@@ -126,6 +147,7 @@ async def push_message(session, sendkey, message):
 
 
 if __name__ == "__main__":
+    setting_logger()
     cron = users.get("CRON", None)
 
     if cron:
