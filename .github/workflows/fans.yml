@@ -17,7 +17,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - name: Run Fans Medal Workflow
+      - name: Install Requirements
+        run: pip3 install -r requirements.txt
+      - name: Fans Medal Step
         env:
           USERS: ${{secrets.USERS}}
         run: python main.py
