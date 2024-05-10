@@ -22,4 +22,4 @@ jobs:
       - name: Fans Medal Step
         env:
           USERS: ${{secrets.USERS}}
-        run: python main.py
+        run: python main.py --log-level WARNING
