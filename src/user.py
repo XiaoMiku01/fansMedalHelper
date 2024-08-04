@@ -118,7 +118,7 @@ class BiliUser:
                         await asyncio.sleep(self.config['LIKE_CD'])
                     self.log.log(
                         "SUCCESS",
-                        f"{medal['anchor_info']['nick_name']} 点赞{i+1}次成功 {index+1}/{len(self.medalsNeedDo)}",
+                        f"{medal['anchor_info']['nick_name']} 点赞{i+1}次成功 {index+1}/{len(self.medals)}",
                     )
             else:
                 self.log.log("INFO", "异步点赞任务开始....")
@@ -250,7 +250,9 @@ class BiliUser:
             return
         HEART_MAX = self.config['WATCHINGLIVE']
         self.log.log("INFO", f"每日{HEART_MAX}分钟任务开始")
+        n = 0
         for medal in self.medalsNeedDo:
+            n += 1
             for heartNum in range(1, HEART_MAX+1):
                 tasks = []
                 tasks.append(self.api.heartbeat(medal['room_info']['room_id'], medal['medal']['target_id']))
@@ -258,7 +260,7 @@ class BiliUser:
                 if heartNum%5==0:
                     self.log.log(
                         "INFO",
-                        f"{medal['anchor_info']['nick_name']} 第{heartNum}次心跳包已发送（{heartNum}/{HEART_MAX}）",
+                        f"{medal['anchor_info']['nick_name']} 第{heartNum}次心跳包已发送（{n}/{len(self.medalsNeedDo)}）",
                     )
                 await asyncio.sleep(60)
         self.log.log("SUCCESS", f"每日{HEART_MAX}分钟任务完成")
