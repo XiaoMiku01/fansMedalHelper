@@ -83,16 +83,28 @@ class BiliUser:
         """
         self.medals.clear()
         self.medalsNeedDo.clear()
-        async for medal in self.api.getFansMedalandRoomID():
-            if self.whiteList == [0]:
+        if self.whiteList == [0]:
+            self.log.info(f"启用黑名单，共 {len(self.bannedList)} 个粉丝牌")
+            async for medal in self.api.getFansMedalandRoomID():
                 if medal['medal']['target_id'] in self.bannedList:
-                    self.log.warning(f"{medal['anchor_info']['nick_name']} 在黑名单中，已过滤")
-                    continue
-                self.medals.append(medal) if medal['room_info']['room_id'] != 0 else ...
-            else:
-                if medal['medal']['target_id'] in self.whiteList:
+                    self.log.warning(
+                        f"[{medal['medal']['target_id']}] {medal['anchor_info']['nick_name']} 在黑名单中，已过滤")
+                else:
                     self.medals.append(medal) if medal['room_info']['room_id'] != 0 else ...
-                    self.log.success(f"{medal['anchor_info']['nick_name']} 在白名单中，加入任务")
+        else:
+            self.log.info(f"启用白名单，共 {len(self.whiteList)} 个粉丝牌")
+            medals = {}
+            async for medal in self.api.getFansMedalandRoomID():
+                if medal['medal']['target_id'] in self.whiteList:
+                    medals[medal['medal']['target_id']] = medal if medal['room_info']['room_id'] != 0 else ...
+            # 重新按白名单顺序调整排序
+            for targetId in self.whiteList:
+                if medals.get(targetId) is not None:
+                    self.medals.append(medals[targetId])
+                    self.log.success(
+                        f"[{medals[targetId]['medal']['target_id']}] {medals[targetId]['anchor_info']['nick_name']} 在白名单中，加入任务")
+                else:
+                    self.log.warning(f"[{targetId}] 对应的粉丝牌未找到，已跳过")
         [
             self.medalsNeedDo.append(medal)
             for medal in self.medals
