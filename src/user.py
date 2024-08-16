@@ -15,6 +15,7 @@ logger.add(
     format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> <blue> {extra[user]} </blue> <level>{message}</level>",
     backtrace=True,
     diagnose=True,
+    level='INFO'
 )
 
 
@@ -84,7 +85,10 @@ class BiliUser:
         self.medals.clear()
         self.medalsNeedDo.clear()
         if self.whiteList == [0]:
-            self.log.info(f"启用黑名单，共 {len(self.bannedList)} 个粉丝牌")
+            if self.bannedList != [0]:
+                self.log.info(f"启用黑名单，共 {len(self.bannedList)} 个粉丝牌")
+            else:
+                self.log.debug(f"白名单、黑名单均未启用")
             async for medal in self.api.getFansMedalandRoomID():
                 if medal['medal']['target_id'] in self.bannedList:
                     self.log.warning(
