@@ -27,5 +27,8 @@ class Qmsg(Provider):
                       qq: str = None,
                       **kwargs):
         message = self.process_message(title, content)
-        self.data = {'msg': message, 'qq': qq}
+        self.data = {
+            'msg': message,
+            # 'qq': qq
+        }
         return self.data
