@@ -121,6 +121,7 @@ class BiliApi:
         self.session = s
 
     def __check_response(self, resp: dict) -> dict:
+        logger.trace(resp)
         if resp["code"] != 0 or ("mode_info" in resp["data"] and resp["message"] != ""):
             raise BiliApiError(resp["code"], resp["message"])
         return resp["data"]

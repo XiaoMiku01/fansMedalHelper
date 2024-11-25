@@ -8,6 +8,26 @@ import aiohttp
 import itertools
 from src import BiliUser
 
+log_file = os.path.join(os.path.dirname(__file__), "log/fansMedalHelper_{time:YYYY-MM-DD}.log")
+log_format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>"
+
+logger.remove()
+logger.add(
+    sys.stdout,
+    format=log_format,
+    backtrace=True,
+    diagnose=True,
+    level="INFO"
+)
+logger.add(
+    log_file,
+    format=log_format,
+    backtrace=True,
+    diagnose=True,
+    rotation="00:00",
+    retention="30 days",
+    level="DEBUG"
+)
 log = logger.bind(user="B站粉丝牌助手")
 __VERSION__ = "0.3.8"
 
