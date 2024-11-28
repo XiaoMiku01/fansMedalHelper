@@ -310,19 +310,6 @@ class BiliApi:
         }
         return await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
 
-    async def doSign(self):
-        """
-        直播区签到
-        """
-        url = "https://api.live.bilibili.com/rc/v1/Sign/doSign"
-        params = {
-            "access_key": self.u.access_key,
-            "actionKey": "appkey",
-            "appkey": Crypto.APPKEY,
-            "ts": int(time.time()),
-        }
-        return await self.__get(url, params=SingableDict(params).signed, headers=self.headers)
-
     async def getUserInfo(self):
         """
         用户直播等级
