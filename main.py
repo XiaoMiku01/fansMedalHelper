@@ -114,6 +114,7 @@ async def main():
 
 def run(*args, **kwargs):
     loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     loop.run_until_complete(main())
     log.info("任务结束，等待下一次执行。")
 
@@ -152,7 +153,5 @@ if __name__ == "__main__":
         scheduler.start()
     else:
         log.info("未配置定时器，开启单次任务。")
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(main())
+        run()
         log.info("任务结束")

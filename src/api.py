@@ -382,6 +382,8 @@ class BiliApi:
 
     async def heartbeat(self, room_id: int, up_id: int):
         url = "https://live-trace.bilibili.com/xlive/data-interface/v1/heartbeat/mobileHeartBeat"
+        today_timestamp = int(time.mktime(time.strptime(f"{time.strftime("%Y-%m-%d", time.localtime(time.time()))} 00:00:00", "%Y-%m-%d %H:%M:%S")))
+        timestamp = int(time.time())-60 if (int(time.time())-60) > today_timestamp else today_timestamp
         data = {
             "platform": "android",
             "uuid": self.u.uuids[0],
@@ -390,7 +392,7 @@ class BiliApi:
             "room_id": f"{room_id}",
             "parent_id": "6",
             "area_id": "283",
-            "timestamp": f"{int(time.time())-60}",
+            "timestamp": f"{timestamp}",
             "secret_key": "axoaadsffcazxksectbbb",
             "watch_time": "60",
             "up_id": f"{up_id}",
