@@ -51,22 +51,6 @@ class BiliUser:
         self.isLogin = True
         return True
 
-    async def doSign(self):
-        try:
-            signInfo = await self.api.doSign()
-            self.log.log("SUCCESS", "签到成功,本月签到次数: {}/{}".format(signInfo['hadSignDays'], signInfo['allDays']))
-            self.message.append(f"【{self.name}】 签到成功,本月签到次数: {signInfo['hadSignDays']}/{signInfo['allDays']}")
-        except Exception as e:
-            self.log.log("ERROR", e)
-            self.errmsg.append(f"【{self.name}】" + str(e))
-        userInfo = await self.api.getUserInfo()
-        self.log.log(
-            "INFO", "当前用户UL等级: {} ,还差 {} 经验升级".format(userInfo['exp']['user_level'], userInfo['exp']['unext'])
-        )
-        self.message.append(
-            f"【{self.name}】 UL等级: {userInfo['exp']['user_level']} ,还差 {userInfo['exp']['unext']} 经验升级"
-        )
-
     async def getMedals(self):
         """
         获取用户勋章
@@ -172,7 +156,6 @@ class BiliUser:
             self.errmsg.append("登录失败 可能是 access_key 过期 , 请重新获取")
             await self.session.close()
         else:
-            await self.doSign()
             await self.getMedals()
 
     async def start(self):
