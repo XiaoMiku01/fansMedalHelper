@@ -19,15 +19,6 @@ logger.add(
     diagnose=True,
     level="INFO"
 )
-logger.add(
-    log_file,
-    format=log_format,
-    backtrace=True,
-    diagnose=True,
-    rotation="00:00",
-    retention="30 days",
-    level="DEBUG"
-)
 log = logger.bind(user="B站粉丝牌助手")
 __VERSION__ = "0.3.8"
 
@@ -45,6 +36,16 @@ try:
 
         with open("users.yaml", "r", encoding="utf-8") as f:
             users = yaml.load(f, Loader=yaml.FullLoader)
+    if users.get("WRITE_LOG_FILE"):
+        logger.add(
+            log_file if users["WRITE_LOG_FILE"] == True else users["WRITE_LOG_FILE"],
+            format=log_format,
+            backtrace=True,
+            diagnose=True,
+            rotation="00:00",
+            retention="30 days",
+            level="DEBUG"
+        )
     assert users["ASYNC"] in [0, 1], "ASYNC参数错误"
     assert users["LIKE_CD"] >= 0, "LIKE_CD参数错误"
     # assert users['SHARE_CD'] >= 0, "SHARE_CD参数错误"
