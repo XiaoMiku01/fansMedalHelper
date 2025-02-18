@@ -125,27 +125,33 @@ class BiliUser:
         if not self.config['DANMAKU_CD']:
             self.log.log("INFO", "弹幕任务关闭")
             return
-        self.log.log("INFO", "弹幕打卡任务开始....(预计 {} 秒完成)".format(len(self.medals) * self.config['DANMAKU_CD']))
+        self.log.log("INFO", "弹幕打卡任务开始....(预计 {} 秒完成)".format(len(self.medals) * self.config['DANMAKU_CD'] * self.config['DANMAKU_NUM']))
         n = 0
         successnum = 0
         for medal in self.medals:
             n += 1
+            if self.config['DANMAKU_CHECK_LIGHT'] and medal['medal']['is_lighted'] == 1:
+                self.log.log("INFO", "{} 房间已点亮".format(medal['anchor_info']['nick_name']))
+                continue
+            if not self.config['DANMAKU_CHECK_LEVEL'] and medal['medal']['level'] > 20:
+                self.log.log("INFO", "{} 房间已满级".format(medal['anchor_info']['nick_name']))
+                continue
             (await self.api.wearMedal(medal['medal']['medal_id'])) if self.config['WEARMEDAL'] else ...
-            try:
-                danmaku = await self.api.sendDanmaku(medal['room_info']['room_id'])
-                successnum+=1
-                self.log.log(
-                    "DEBUG",
-                    "{} 房间弹幕打卡成功: {} ({}/{})".format(
-                        medal['anchor_info']['nick_name'], danmaku, n, len(self.medals)
-                    ),
-                )
-            except Exception as e:
-                self.log.log("ERROR", "{} 房间弹幕打卡失败: {}".format(medal['anchor_info']['nick_name'], e))
-                self.errmsg.append(f"【{self.name}】 {medal['anchor_info']['nick_name']} 房间弹幕打卡失败: {str(e)}")
-            finally:
-                await asyncio.sleep(self.config['DANMAKU_CD'])
-
+            for i in range(self.config['DANMAKU_NUM']):
+                try:
+                        danmaku = await self.api.sendDanmaku(medal['room_info']['room_id'])
+                        self.log.log(
+                            "INFO",
+                            "{} 房间弹幕打卡({}/{})成功: {} ({}/{})".format(
+                                medal['anchor_info']['nick_name'], i, self.config['DANMAKU_NUM'], danmaku, n, len(self.medals)
+                            ),
+                        )
+                except Exception as e:
+                    self.log.log("ERROR", "{} 房间弹幕打卡({}/{})失败: {}".format(medal['anchor_info']['nick_name'], i, self.config['DANMAKU_NUM'], e))
+                    self.errmsg.append(f"【{self.name}】 {medal['anchor_info']['nick_name']} 房间弹幕打卡失败: {str(e)}")
+                finally:
+                    await asyncio.sleep(self.config['DANMAKU_CD'])
+            successnum+=1
         if hasattr(self, 'initialMedal'):
             (await self.api.wearMedal(self.initialMedal['medal_id'])) if self.config['WEARMEDAL'] else ...
         self.log.log("SUCCESS", "弹幕打卡任务完成")
