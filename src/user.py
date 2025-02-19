@@ -204,7 +204,7 @@ class BiliUser:
             ["【1500】", "【1200至1500】", "【300至1200】", "【300以下】"],
         ):
             if len(l) > 0:
-                self.message.append(f"{n}" + ' '.join(l[:5]) + f"{'等' if len(l) > 5 else ''}" + f' {len(l)}个')
+                self.message.append(f"{n}{' '.join(l[:5])}{'等' if len(l) > 5 else ''} {len(l)}个")
 
         if hasattr(self, 'initialMedal'):
             initialMedalInfo = await self.api.getMedalsInfoByUid(self.initialMedal['target_id'])

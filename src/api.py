@@ -370,7 +370,7 @@ class BiliApi:
 
     async def heartbeat(self, room_id: int, up_id: int):
         url = "https://live-trace.bilibili.com/xlive/data-interface/v1/heartbeat/mobileHeartBeat"
-        today_timestamp = int(time.mktime(time.strptime(f"{time.strftime("%Y-%m-%d", time.localtime(time.time()))} 00:00:00", "%Y-%m-%d %H:%M:%S")))
+        today_timestamp = int(time.mktime(time.strptime(f"{time.strftime('%Y-%m-%d', time.localtime(time.time()))} 00:00:00", "%Y-%m-%d %H:%M:%S")))
         now_timestamp = int(time.time())
         timestamp = now_timestamp - 60 if now_timestamp - 60 > today_timestamp else today_timestamp
         data = {
