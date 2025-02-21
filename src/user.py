@@ -125,16 +125,23 @@ class BiliUser:
         if not self.config['DANMAKU_CD']:
             self.log.log("INFO", "弹幕任务关闭")
             return
-        self.log.log("INFO", "弹幕打卡任务开始....(预计 {} 秒完成)".format(len(self.medals) * self.config['DANMAKU_CD'] * self.config['DANMAKU_NUM']))
+        # 计算实际执行的长度
+        filtered_medals = [
+            medal for medal in self.medals
+            if not (self.config['DANMAKU_CHECK_LIGHT'] and medal['medal']['is_lighted'] == 1)
+            and not (not self.config['DANMAKU_CHECK_LEVEL'] and medal['medal']['level'] > 20)
+        ]
+        filtered_medals_length = len(filtered_medals)
+        self.log.log("INFO", "弹幕打卡任务开始....(预计 {} 秒完成)".format(filtered_medals_length * self.config['DANMAKU_CD'] * self.config['DANMAKU_NUM']))
         n = 0
         successnum = 0
         for medal in self.medals:
             n += 1
             if self.config['DANMAKU_CHECK_LIGHT'] and medal['medal']['is_lighted'] == 1:
-                self.log.log("INFO", "{} 房间已点亮".format(medal['anchor_info']['nick_name']))
+                self.log.log("INFO", "{} 房间已点亮，跳过".format(medal['anchor_info']['nick_name']))
                 continue
             if not self.config['DANMAKU_CHECK_LEVEL'] and medal['medal']['level'] > 20:
-                self.log.log("INFO", "{} 房间已满级".format(medal['anchor_info']['nick_name']))
+                self.log.log("INFO", "{} 房间已满级，跳过".format(medal['anchor_info']['nick_name']))
                 continue
             (await self.api.wearMedal(medal['medal']['medal_id'])) if self.config['WEARMEDAL'] else ...
             for i in range(self.config['DANMAKU_NUM']):
@@ -143,7 +150,7 @@ class BiliUser:
                         self.log.log(
                             "INFO",
                             "{} 房间弹幕打卡({}/{})成功: {} ({}/{})".format(
-                                medal['anchor_info']['nick_name'], i, self.config['DANMAKU_NUM'], danmaku, n, len(self.medals)
+                                medal['anchor_info']['nick_name'], i, self.config['DANMAKU_NUM'], danmaku, n + 1, len(self.medals)
                             ),
                         )
                 except Exception as e:
@@ -155,7 +162,7 @@ class BiliUser:
         if hasattr(self, 'initialMedal'):
             (await self.api.wearMedal(self.initialMedal['medal_id'])) if self.config['WEARMEDAL'] else ...
         self.log.log("SUCCESS", "弹幕打卡任务完成")
-        self.message.append(f"【{self.name}】 弹幕打卡任务完成 {successnum}/{len(self.medals)}")
+        self.message.append(f"【{self.name}】 弹幕打卡任务完成 {successnum}/{filtered_medals_length}/{len(self.medals)}")
 
     async def init(self):
         if not await self.loginVerify():
