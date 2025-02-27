@@ -150,7 +150,7 @@ class BiliUser:
                         self.log.log(
                             "INFO",
                             "{} 房间弹幕打卡({}/{})成功: {} ({}/{})".format(
-                                medal['anchor_info']['nick_name'], i, self.config['DANMAKU_NUM'], danmaku, n + 1, len(self.medals)
+                                medal['anchor_info']['nick_name'], i + 1, self.config['DANMAKU_NUM'], danmaku, n, len(self.medals)
                             ),
                         )
                 except Exception as e:
