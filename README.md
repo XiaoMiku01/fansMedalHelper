@@ -63,3 +63,4 @@
 
 [<img src="https://s3.amazonaws.com/erxes/github/cloudflare.png" height="200"/>](https://www.cloudflare.com/)
 [<img src="https://user-images.githubusercontent.com/11474360/112592917-baa00600-8e41-11eb-9da4-ecb53bb3c2fa.png" width="200"/>](https://jb.gg/OpenSource)
+[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
