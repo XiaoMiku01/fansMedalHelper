@@ -3,6 +3,7 @@ import sys
 import os
 import asyncio
 import uuid
+import time
 from loguru import logger
 from datetime import datetime, timedelta
 
@@ -254,6 +255,10 @@ class BiliUser:
         for medal in self.medalsNeedDo:
             n += 1
             for heartNum in range(1, HEART_MAX+1):
+                if self.config['STOPWATCHINGTIME']:
+                    if int(time.time()) >= self.config['STOPWATCHINGTIME']:
+                        self.log.log("INFO", "已到设置的时间，自动停止直播任务")
+                        return
                 tasks = []
                 tasks.append(self.api.heartbeat(medal['room_info']['room_id'], medal['medal']['target_id']))
                 await asyncio.gather(*tasks)
