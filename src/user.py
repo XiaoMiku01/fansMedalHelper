@@ -31,7 +31,7 @@ class BiliUser:
             raise ValueError("白名单或黑名单格式错误")
         self.config = config
         self.medals = []  # 用户所有勋章
-        self.medalsNeedDo = []  # 用户所有勋章，等级小于20的 未满1500的
+        self.medalsNeedDo = []  # 当日亲密度未满 30 的勋章
 
         self.session = ClientSession(timeout=ClientTimeout(total=3), trust_env = True)
         self.api = BiliApi(self, self.session)
@@ -96,7 +96,7 @@ class BiliUser:
         [
             self.medalsNeedDo.append(medal)
             for medal in self.medals
-            if medal['medal']['level'] < 20 and medal['medal']['today_feed'] < 1500
+            if medal['medal']['today_feed'] < 30
         ]
 
     async def like_v3(self, failedMedals: list = []):
@@ -189,11 +189,11 @@ class BiliUser:
         if self.isLogin:
             tasks = []
             if self.medalsNeedDo:
-                self.log.log("INFO", f"共有 {len(self.medalsNeedDo)} 个牌子未满 1500 亲密度")
+                self.log.log("INFO", f"共有 {len(self.medalsNeedDo)} 个牌子未满 30 亲密度")
                 tasks.append(self.like_v3())
                 tasks.append(self.watchinglive())
             else:
-                self.log.log("INFO", "所有牌子已满 1500 亲密度")
+                self.log.log("INFO", "所有牌子已满 30 亲密度")
             tasks.append(self.sendDanmaku())
             tasks.append(self.signInGroups())
             await asyncio.gather(*tasks)
@@ -205,23 +205,21 @@ class BiliUser:
         await self.getMedals()
         nameList1, nameList2, nameList3, nameList4 = [], [], [], []
         for medal in self.medals:
-            if medal['medal']['level'] >= 20:
-                continue
             today_feed = medal['medal']['today_feed']
             nick_name = medal['anchor_info']['nick_name']
-            if today_feed >= 1500:
+            if today_feed >= 30:
                 nameList1.append(nick_name)
-            elif 1200 <= today_feed < 1500:
+            elif 24 <= today_feed < 30:
                 nameList2.append(nick_name)
-            elif 300 <= today_feed < 1200:
+            elif 6 <= today_feed < 24:
                 nameList3.append(nick_name)
-            elif today_feed < 300:
+            elif today_feed < 6:
                 nameList4.append(nick_name)
-        self.message.append(f"【{self.name}】 今日亲密度获取情况如下（20级以下）：")
+        self.message.append(f"【{self.name}】 今日亲密度获取情况如下：")
 
         for l, n in zip(
             [nameList1, nameList2, nameList3, nameList4],
-            ["【1500】", "【1200至1500】", "【300至1200】", "【300以下】"],
+            ["【30】", "【24至30】", "【6至24】", "【6以下】"],
         ):
             if len(l) > 0:
                 self.message.append(f"{n}" + ' '.join(l[:5]) + f"{'等' if len(l) > 5 else ''}" + f' {len(l)}个')
@@ -233,13 +231,13 @@ class BiliUser:
                 self.message.append(
                     f"【当前佩戴】「{initialMedal['medal_name']}」({initialMedal['target_name']}) {initialMedal['level']} 级 "
                 )
-                if initialMedal['level'] < 20 and initialMedal['today_feed'] != 0:
+                if initialMedal['today_feed'] != 0:
                     need = initialMedal['next_intimacy'] - initialMedal['intimacy']
-                    need_days = need // 1500 + 1
+                    need_days = need // 30 + 1
                     end_date = datetime.now() + timedelta(days=need_days)
                     self.message.append(f"今日已获取亲密度 {initialMedal['today_feed']} (B站结算有延迟，请耐心等待)")
                     self.message.append(
-                        f"距离下一级还需 {need} 亲密度 预计需要 {need_days} 天 ({end_date.strftime('%Y-%m-%d')},以每日 1500 亲密度计算)"
+                        f"距离下一级还需 {need} 亲密度 预计需要 {need_days} 天 ({end_date.strftime('%Y-%m-%d')},以每日 30 亲密度计算)"
                     )
         await self.session.close()
         return self.message + self.errmsg + ['---']
