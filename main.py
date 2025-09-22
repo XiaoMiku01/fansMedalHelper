@@ -31,6 +31,7 @@ try:
     assert users["DANMAKU_CD"] >= 0, "DANMAKU_CD参数错误"
     assert users["WATCHINGLIVE"] >= 0, "WATCHINGLIVE参数错误"
     assert users["WEARMEDAL"] in [0, 1], "WEARMEDAL参数错误"
+    assert users.get("WATCHINGALL", 0) in [0, 1], "WATCHINGALL参数错误"
     config = {
         "ASYNC": users["ASYNC"],
         "LIKE_CD": users["LIKE_CD"],
@@ -40,6 +41,7 @@ try:
         "WEARMEDAL": users["WEARMEDAL"],
         "SIGNINGROUP": users.get("SIGNINGROUP", 2),
         "PROXY": users.get("PROXY"),
+        "WATCHINGALL": users.get("WATCHINGALL", 0),
     }
 except Exception as e:
     log.error(f"读取配置文件失败,请检查配置文件格式是否正确: {e}")
