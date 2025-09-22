@@ -40,7 +40,19 @@ try:
         "WEARMEDAL": users["WEARMEDAL"],
         "SIGNINGROUP": users.get("SIGNINGROUP", 2),
         "PROXY": users.get("PROXY"),
+        "STOPWATCHINGTIME": None,
     }
+    stoptime = users.get("STOPWATCHINGTIME", None)
+    if stoptime:
+        import time
+        now = int(time.time())
+        if isinstance(stoptime, int):
+            delay = now + int(stoptime)
+        else:
+            delay = int(time.mktime(time.strptime(f'{time.strftime("%Y-%m-%d", time.localtime(now))} {stoptime}', "%Y-%m-%d %H:%M:%S")))
+            delay = delay if delay > now else delay + 86400
+        config["STOPWATCHINGTIME"] = delay
+        log.info(f"本轮任务将在 {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(config["STOPWATCHINGTIME"]))} 结束")
 except Exception as e:
     log.error(f"读取配置文件失败,请检查配置文件格式是否正确: {e}")
     exit(1)
@@ -114,6 +126,7 @@ async def main():
 
 def run(*args, **kwargs):
     loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     loop.run_until_complete(main())
     log.info("任务结束，等待下一次执行。")
 
@@ -152,7 +165,5 @@ if __name__ == "__main__":
         scheduler.start()
     else:
         log.info("未配置定时器，开启单次任务。")
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(main())
+        run()
         log.info("任务结束")
